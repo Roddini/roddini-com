@@ -99,25 +99,6 @@ export default function Education() {
                 </span>
               </a>
               <a
-                href={`tel:${contact.phone}`}
-                className="flex items-center gap-3 group"
-              >
-                <span
-                  className="text-[10px] tracking-widest uppercase w-16 shrink-0"
-                  style={{ color: 'rgba(100,116,139,0.6)' }}
-                >
-                  Phone
-                </span>
-                <span
-                  className="text-sm font-light transition-colors duration-200"
-                  style={{ color: 'rgba(203,213,225,0.8)' }}
-                  onMouseEnter={(e) => ((e.target as HTMLElement).style.color = '#00d4aa')}
-                  onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'rgba(203,213,225,0.8)')}
-                >
-                  {contact.phone}
-                </span>
-              </a>
-              <a
                 href={`https://${contact.linkedin}`}
                 target="_blank"
                 rel="noopener noreferrer"
