@@ -68,56 +68,37 @@ export default function Education() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-xl p-7 relative"
+            className="rounded-xl p-7 relative flex flex-col items-center justify-center text-center"
             style={{
               background: 'rgba(6,10,19,0.75)',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(0,212,170,0.12)',
             }}
           >
-            <p className="text-[10px] tracking-widest uppercase mb-6" style={{ color: 'rgba(0,212,170,0.5)' }}>
+            <p className="text-[10px] tracking-widest uppercase mb-5" style={{ color: 'rgba(0,212,170,0.5)' }}>
               Get in touch
             </p>
-            <div className="space-y-4">
+            <div className="w-8 h-px mb-8" style={{ background: 'rgba(0,212,170,0.3)' }} />
+            <div className="space-y-6">
               <a
                 href={`mailto:${contact.email}`}
-                className="flex items-center gap-3 group"
+                className="block text-base font-light transition-colors duration-200"
+                style={{ color: 'rgba(203,213,225,0.8)' }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = '#00d4aa')}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'rgba(203,213,225,0.8)')}
               >
-                <span
-                  className="text-[10px] tracking-widest uppercase w-16 shrink-0"
-                  style={{ color: 'rgba(100,116,139,0.6)' }}
-                >
-                  Email
-                </span>
-                <span
-                  className="text-sm font-light transition-colors duration-200"
-                  style={{ color: 'rgba(203,213,225,0.8)' }}
-                  onMouseEnter={(e) => ((e.target as HTMLElement).style.color = '#00d4aa')}
-                  onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'rgba(203,213,225,0.8)')}
-                >
-                  {contact.email}
-                </span>
+                {contact.email}
               </a>
               <a
                 href={`https://${contact.linkedin}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 group"
+                className="block text-base font-light transition-colors duration-200"
+                style={{ color: 'rgba(203,213,225,0.8)' }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = '#00d4aa')}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'rgba(203,213,225,0.8)')}
               >
-                <span
-                  className="text-[10px] tracking-widest uppercase w-16 shrink-0"
-                  style={{ color: 'rgba(100,116,139,0.6)' }}
-                >
-                  LinkedIn
-                </span>
-                <span
-                  className="text-sm font-light transition-colors duration-200"
-                  style={{ color: 'rgba(203,213,225,0.8)' }}
-                  onMouseEnter={(e) => ((e.target as HTMLElement).style.color = '#00d4aa')}
-                  onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'rgba(203,213,225,0.8)')}
-                >
-                  {contact.linkedin}
-                </span>
+                {contact.linkedin}
               </a>
             </div>
           </motion.div>
