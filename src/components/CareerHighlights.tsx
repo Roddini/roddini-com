@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
-import { RESUME, CareerHighlight } from '@/data/resume'
+import type { SanityCareerHighlight } from '@/sanity/types'
 
 const CARD_W = 320
 const OFFSET = CARD_W + 36
@@ -17,8 +17,8 @@ function hexToRgb(hex: string): string {
   return `${r},${g},${b}`
 }
 
-export default function CareerHighlights() {
-  const items: CareerHighlight[] = RESUME.careerHighlights
+export default function CareerHighlights({ items }: { items: SanityCareerHighlight[] }) {
+  if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
   const [centerHovered, setCenterHovered] = useState(false)
@@ -151,7 +151,7 @@ export default function CareerHighlights() {
                   </span>
                   <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>
                     <p
-                      className={`text-sm leading-relaxed ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
+                      className={`text-sm leading-relaxed whitespace-pre-line ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
                       style={{ color: 'rgba(148,163,184,0.75)' }}
                     >
                       {item.description}

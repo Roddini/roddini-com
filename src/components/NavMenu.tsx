@@ -35,6 +35,8 @@ export default function NavMenu() {
     }
   }, [])
 
+  if (pathname.startsWith('/studio')) return null
+
   return (
     <motion.div
       className="fixed top-6 right-6 z-40 flex flex-col items-end"

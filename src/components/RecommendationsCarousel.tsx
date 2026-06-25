@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Link from 'next/link'
-import { RECOMMENDATIONS } from '@/data/recommendations'
+import type { SanityRecommendation } from '@/sanity/types'
 
 const CARD_W = 300
 const OFFSET = CARD_W + 36
@@ -18,8 +18,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   general: '#00d4aa',
 }
 
-export default function RecommendationsCarousel() {
-  const items = RECOMMENDATIONS
+export default function RecommendationsCarousel({ items }: { items: SanityRecommendation[] }) {
+  if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
   const [centerHovered, setCenterHovered] = useState(false)
@@ -145,7 +145,7 @@ export default function RecommendationsCarousel() {
                     <h3 className="text-lg font-light text-white mb-3 shrink-0">{item.name}</h3>
                     <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>
                       <p
-                        className={`text-sm leading-relaxed ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
+                        className={`text-sm leading-relaxed whitespace-pre-line ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
                         style={{ color: 'rgba(148,163,184,0.75)' }}
                       >
                         {item.description}

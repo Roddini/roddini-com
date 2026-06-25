@@ -7,6 +7,8 @@ export default function Initials() {
   const pathname = usePathname()
   const isHome = pathname === '/'
 
+  if (pathname.startsWith('/studio')) return null
+
   return (
     <div className="fixed top-5 left-6 z-40 group">
       <Link

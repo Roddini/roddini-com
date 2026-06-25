@@ -3,15 +3,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Link from 'next/link'
-import { HOBBIES } from '@/data/hobbies'
+import type { SanityHobby } from '@/sanity/types'
 
 const CARD_W = 300
 const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-export default function HobbiesCarousel() {
-  const items = HOBBIES
+export default function HobbiesCarousel({ items }: { items: SanityHobby[] }) {
+  if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
   const [centerHovered, setCenterHovered] = useState(false)
@@ -59,7 +59,7 @@ export default function HobbiesCarousel() {
   }))
 
   return (
-    <section id="hobbies" className="relative py-24" style={{ zIndex: 1 }}>
+    <section id="hobbies" className="relative pt-40 pb-24" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
         <div className="flex items-center gap-4 mb-16">
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
@@ -136,7 +136,7 @@ export default function HobbiesCarousel() {
                   </p>
                   <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>
                     <p
-                      className={`text-sm leading-relaxed ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
+                      className={`text-sm leading-relaxed whitespace-pre-line ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
                       style={{ color: 'rgba(148,163,184,0.75)' }}
                     >
                       {item.description}

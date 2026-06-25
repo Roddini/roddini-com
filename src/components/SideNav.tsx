@@ -16,7 +16,8 @@ const SECTIONS = [
   { id: 'entertainment', label: 'Listening' },
 ]
 
-export default function SideNav() {
+export default function SideNav({ hiddenSectionIds = [] }: { hiddenSectionIds?: string[] }) {
+  const sections = SECTIONS.filter((s) => !hiddenSectionIds.includes(s.id))
   const [visible, setVisible] = useState(false)
   const [active, setActive] = useState('hero')
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -49,7 +50,7 @@ export default function SideNav() {
   useEffect(() => {
     const observers: IntersectionObserver[] = []
 
-    SECTIONS.forEach(({ id }) => {
+    sections.forEach(({ id }) => {
       const el = document.getElementById(id)
       if (!el) return
       const observer = new IntersectionObserver(
@@ -77,7 +78,7 @@ export default function SideNav() {
       className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col items-end gap-5"
       aria-label="Page navigation"
     >
-      {SECTIONS.map(({ id, label }) => {
+      {sections.map(({ id, label }) => {
         const isActive = active === id
         return (
           <button

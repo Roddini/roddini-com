@@ -3,21 +3,27 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Link from 'next/link'
-import { ENTERTAINMENT, FREQUENCY_LABELS, type PodcastFrequency } from '@/data/entertainment'
+import type { SanityPodcast } from '@/sanity/types'
 
 const CARD_W = 300
 const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-const FREQUENCY_COLORS: Record<PodcastFrequency, string> = {
+const FREQUENCY_COLORS: Record<string, string> = {
   always: '#00d4aa',
   sometimes: '#22d3ee',
   occasionally: '#0ea5e9',
 }
 
-export default function EntertainmentPreview() {
-  const items = ENTERTAINMENT.podcasts
+const FREQUENCY_LABELS: Record<string, string> = {
+  always: 'Always On',
+  sometimes: 'Sometimes',
+  occasionally: 'Occasionally',
+}
+
+export default function EntertainmentPreview({ items }: { items: SanityPodcast[] }) {
+  if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
   const [centerHovered, setCenterHovered] = useState(false)
@@ -151,7 +157,7 @@ export default function EntertainmentPreview() {
                     <h3 className="text-lg font-light text-white mb-3 shrink-0">{item.name}</h3>
                     <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>
                       <p
-                        className={`text-sm leading-relaxed ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
+                        className={`text-sm leading-relaxed whitespace-pre-line ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
                         style={{ color: 'rgba(148,163,184,0.75)' }}
                       >
                         {item.description}
