@@ -151,7 +151,7 @@ export const RESUME = {
         'Built the onboarding program and continuously refined it to give new hires a seamless first experience.',
         'Launched an internship program to develop early-career talent and seed a culture of learning.',
         'Launched and ran an employee referral program, turning employee networks into a reliable source of hires.',
-        'Managed immigration-related hiring for foreign nationals, ensuring compliance and keeping cases moving efficiently.',
+        'Owned end-to-end immigration case management serving as the primary point of contact between employees, legal, and the business: managing outside immigration counsel, coordinating documentation for USCIS filings, tracking deadlines and renewals, and ensuring I-9/E-Verify compliance.',
         'Partnered with executives on organizational design and development to improve operational efficiency and effectiveness.',
         'Built pipelines for and hired machine learning, data science, and engineering talent in a highly competitive market, often before the company had brand recognition to compete for it.',
       ],
@@ -228,7 +228,7 @@ export const RESUME = {
       company: 'LendingClub',
       year: '2015',
       description:
-        'A recruiting enablement tool that centralized institutional knowledge and market intelligence — improving search efficiency, shortening new-hire ramp time, and eliminating redundant work across the team.',
+        'A recruiting enablement tool that centralized institutional knowledge and market intelligence — improving search efficiency, shortening new-hire ramp time, and eliminating redundant work across the team. ROGER stood for Recruiting\'s Omnipotent Guide to Everything Recruiting, given a human name because it was meant to be a living document and part of the team.',
       tags: ['Internal Tool', 'Recruiting Ops'],
     },
     {
@@ -285,7 +285,7 @@ export const RESUME = {
       company: 'Varo',
       year: '2018',
       description:
-        'Curated a company merchandise line as part of building Varo\'s employer brand — thoughtfully designed pieces that employees actually wanted to wear and that made the brand feel alive.',
+        'Curated Varo\'s company merchandise line as part of building the employer brand — pieces employees actually wanted to wear.',
       tags: ['Employer Brand', 'Recruiting'],
     },
     {

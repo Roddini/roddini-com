@@ -10,6 +10,10 @@ const SECTIONS = [
   { id: 'projects', label: 'Projects' },
   { id: 'fun-projects', label: 'Fun' },
   { id: 'education', label: 'Education' },
+  { id: 'contact', label: 'Contact' },
+  { id: 'hobbies', label: 'Hobbies' },
+  { id: 'recommendations', label: 'Picks' },
+  { id: 'entertainment', label: 'Listening' },
 ]
 
 export default function SideNav() {

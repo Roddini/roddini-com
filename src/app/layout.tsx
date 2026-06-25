@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import './globals.css'
+import NavMenu from '@/components/NavMenu'
+import Initials from '@/components/Initials'
 
 const geist = Geist({
   variable: '--font-geist-sans',
@@ -17,7 +19,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        <NavMenu />
+        <Initials />
+        {children}
+      </body>
     </html>
   )
 }

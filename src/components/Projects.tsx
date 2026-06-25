@@ -13,6 +13,7 @@ export default function Projects() {
   const projects = RESUME.projects
   const n = projects.length
   const [rawIdx, setRawIdx] = useState(0)
+  const [centerHovered, setCenterHovered] = useState(false)
   const autoRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pausedRef = useRef(false)
   const driftMV = useMotionValue(0)
@@ -40,12 +41,10 @@ export default function Projects() {
     return stopAuto
   }, [startAuto, stopAuto])
 
-  // Reset drift on each advance (masked by the spring)
   useEffect(() => {
     driftMV.set(0)
   }, [rawIdx, driftMV])
 
-  // Continuous one-directional left drift
   useAnimationFrame((_, delta) => {
     if (!pausedRef.current) {
       driftMV.set(driftMV.get() - delta * DRIFT_SPEED)
@@ -61,7 +60,6 @@ export default function Projects() {
   return (
     <section id="projects" className="relative py-24" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
-        {/* Section label */}
         <div className="flex items-center gap-4 mb-16">
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
           <span
@@ -73,7 +71,6 @@ export default function Projects() {
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>
 
-        {/* Carousel */}
         <motion.div
           className="relative overflow-hidden select-none"
           style={{ height: 300, cursor: 'grab', touchAction: 'pan-y' }}
@@ -81,7 +78,7 @@ export default function Projects() {
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.06}
           onMouseEnter={() => { stopAuto(); pausedRef.current = true }}
-          onMouseLeave={() => { startAuto(); pausedRef.current = false }}
+          onMouseLeave={() => { setCenterHovered(false); startAuto(); pausedRef.current = false }}
           onDragStart={() => { stopAuto(); pausedRef.current = true }}
           onDragEnd={(_, info) => {
             if (info.offset.x < -60 || info.velocity.x < -400) next()
@@ -92,7 +89,6 @@ export default function Projects() {
         >
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             {virtualCards.map(({ virtualIdx, offset, project }) => (
-              // Outer div: spring-based carousel position
               <motion.div
                 key={virtualIdx}
                 className="absolute"
@@ -107,12 +103,13 @@ export default function Projects() {
                   zIndex: offset === 0 ? 10 : Math.abs(offset) === 1 ? 5 : 0,
                 }}
                 transition={{ type: 'spring' as const, stiffness: 500, damping: 45 }}
+                onMouseEnter={() => { if (offset === 0) setCenterHovered(true) }}
+                onMouseLeave={() => { if (offset === 0) setCenterHovered(false) }}
                 onClick={() => {
                   if (offset === 1) next()
                   else if (offset === -1) prev()
                 }}
               >
-                {/* Inner div: shared continuous left drift for all visible cards */}
                 <motion.div
                   className="flex flex-col rounded-xl p-6"
                   style={{
@@ -125,19 +122,24 @@ export default function Projects() {
                   }}
                 >
                   <span
-                    className="text-[10px] tracking-widest uppercase font-light"
+                    className="text-[10px] tracking-widest uppercase font-light shrink-0"
                     style={{ color: 'rgba(0,212,170,0.5)' }}
                   >
                     {project.year} · {project.company}
                   </span>
-                  <h3 className="text-lg font-light text-white mt-2 mb-3">{project.name}</h3>
-                  <p
-                    className="text-sm leading-relaxed flex-1 line-clamp-4"
-                    style={{ color: 'rgba(148,163,184,0.75)' }}
-                  >
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-4">
+                  <h3 className="text-lg font-light text-white mt-2 mb-3 shrink-0">{project.name}</h3>
+                  <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>
+                    <p
+                      className={`text-sm leading-relaxed ${offset === 0 && centerHovered ? '' : 'line-clamp-4'}`}
+                      style={{ color: 'rgba(148,163,184,0.75)' }}
+                    >
+                      {project.description}
+                    </p>
+                  </div>
+                  {offset === 0 && !centerHovered && project.description.length > 100 && (
+                    <p className="text-xs mt-1 shrink-0" style={{ color: 'rgba(0,212,170,0.45)' }}>···</p>
+                  )}
+                  <div className="flex flex-wrap gap-2 mt-3 shrink-0">
                     {project.tags.map((tag) => (
                       <span
                         key={tag}
@@ -157,7 +159,6 @@ export default function Projects() {
             ))}
           </div>
 
-          {/* Edge fades */}
           <div
             className="absolute inset-y-0 left-0 w-16 pointer-events-none z-20"
             style={{ background: 'linear-gradient(to right, #060a13 30%, transparent 100%)' }}
@@ -168,7 +169,6 @@ export default function Projects() {
           />
         </motion.div>
 
-        {/* Navigation */}
         <div className="flex flex-col items-center gap-4 mt-6">
           <div className="flex items-center gap-2">
             {projects.map((_, i) => (

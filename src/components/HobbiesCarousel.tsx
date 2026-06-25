@@ -2,23 +2,16 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
-import { RESUME, CareerHighlight } from '@/data/resume'
+import Link from 'next/link'
+import { HOBBIES } from '@/data/hobbies'
 
-const CARD_W = 320
+const CARD_W = 300
 const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-function hexToRgb(hex: string): string {
-  const clean = hex.replace('#', '')
-  const r = parseInt(clean.substring(0, 2), 16)
-  const g = parseInt(clean.substring(2, 4), 16)
-  const b = parseInt(clean.substring(4, 6), 16)
-  return `${r},${g},${b}`
-}
-
-export default function CareerHighlights() {
-  const items: CareerHighlight[] = RESUME.careerHighlights
+export default function HobbiesCarousel() {
+  const items = HOBBIES
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
   const [centerHovered, setCenterHovered] = useState(false)
@@ -49,12 +42,10 @@ export default function CareerHighlights() {
     return stopAuto
   }, [startAuto, stopAuto])
 
-  // Reset drift on each advance (masked by the spring)
   useEffect(() => {
     driftMV.set(0)
   }, [rawIdx, driftMV])
 
-  // Continuous one-directional left drift
   useAnimationFrame((_, delta) => {
     if (!pausedRef.current) {
       driftMV.set(driftMV.get() - delta * DRIFT_SPEED)
@@ -68,24 +59,22 @@ export default function CareerHighlights() {
   }))
 
   return (
-    <section id="career-highlights" className="relative py-24" style={{ zIndex: 1 }}>
+    <section id="hobbies" className="relative py-24" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
-        {/* Section label */}
         <div className="flex items-center gap-4 mb-16">
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
           <span
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Career Highlights
+            Hobbies
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>
 
-        {/* Carousel */}
         <motion.div
           className="relative overflow-hidden select-none"
-          style={{ height: 280, cursor: 'grab', touchAction: 'pan-y' }}
+          style={{ height: 260, cursor: 'grab', touchAction: 'pan-y' }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.06}
@@ -127,28 +116,24 @@ export default function CareerHighlights() {
                   style={{
                     x: Math.abs(offset) <= 1 ? driftMV : undefined,
                     width: CARD_W,
-                    height: 240,
+                    height: 220,
                     background: 'rgba(6,10,19,0.78)',
                     backdropFilter: 'blur(10px)',
-                    border: `1px solid rgba(${hexToRgb(item.accent)},0.15)`,
+                    border: '1px solid rgba(0,212,170,0.12)',
                   }}
                 >
-                  <div
-                    className="w-8 h-[2px] rounded-full mb-4 shrink-0"
-                    style={{ background: item.accent }}
-                  />
-                  <h3
-                    className="text-lg font-light leading-snug mb-2 shrink-0"
-                    style={{ color: item.accent }}
-                  >
-                    {item.headline}
-                  </h3>
-                  <span
-                    className="text-[10px] tracking-widest uppercase font-light mb-3 shrink-0"
-                    style={{ color: 'rgba(100,116,139,0.7)' }}
-                  >
-                    {item.company} · {item.period}
-                  </span>
+                  {item.status === 'placeholder' && (
+                    <span
+                      className="text-[9px] tracking-widest uppercase mb-3 shrink-0"
+                      style={{ color: 'rgba(100,116,139,0.5)' }}
+                    >
+                      Coming soon
+                    </span>
+                  )}
+                  <h3 className="text-xl font-light text-white mb-1 shrink-0">{item.name}</h3>
+                  <p className="text-[11px] tracking-widest uppercase mb-3 shrink-0" style={{ color: '#00d4aa', opacity: 0.7 }}>
+                    {item.tagline}
+                  </p>
                   <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>
                     <p
                       className={`text-sm leading-relaxed ${offset === 0 && centerHovered ? '' : 'line-clamp-3'}`}
@@ -160,24 +145,16 @@ export default function CareerHighlights() {
                   {offset === 0 && !centerHovered && item.description.length > 100 && (
                     <p className="text-xs mt-1 shrink-0" style={{ color: 'rgba(0,212,170,0.45)' }}>···</p>
                   )}
-                  {item.link && (
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 text-[10px] tracking-widest uppercase flex items-center gap-1.5 hover:opacity-100 transition-opacity duration-200 shrink-0"
-                      style={{ color: `rgba(${hexToRgb(item.accent)},0.55)` }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Read the article →
-                    </a>
+                  {item.promoCode && (
+                    <p className="mt-2 text-[10px] tracking-widest uppercase shrink-0" style={{ color: 'rgba(0,212,170,0.6)' }}>
+                      Code: {item.promoCode}
+                    </p>
                   )}
                 </motion.div>
               </motion.div>
             ))}
           </div>
 
-          {/* Edge fades */}
           <div
             className="absolute inset-y-0 left-0 w-16 pointer-events-none z-20"
             style={{ background: 'linear-gradient(to right, #060a13 30%, transparent 100%)' }}
@@ -188,7 +165,6 @@ export default function CareerHighlights() {
           />
         </motion.div>
 
-        {/* Navigation */}
         <div className="flex flex-col items-center gap-4 mt-6">
           <div className="flex items-center gap-2">
             {items.map((_, i) => (
@@ -239,6 +215,15 @@ export default function CareerHighlights() {
               →
             </button>
           </div>
+          <Link
+            href="/hobbies"
+            className="text-[10px] tracking-[0.3em] uppercase transition-colors duration-200 mt-2"
+            style={{ color: 'rgba(0,212,170,0.45)' }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = '#00d4aa')}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'rgba(0,212,170,0.45)')}
+          >
+            See all hobbies →
+          </Link>
         </div>
       </div>
     </section>
