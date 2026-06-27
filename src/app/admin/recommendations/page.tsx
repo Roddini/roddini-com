@@ -15,17 +15,25 @@ type Recommendation = {
   featured_in_carousel: boolean
 }
 
-const emptyForm = { name: '', category: 'general', description: '', link: '', sort_order: 0 }
+type Category = { id: number; value: string; label: string; color: string }
+
+const emptyForm = { name: '', category: '', description: '', link: '', sort_order: 0 }
 
 export default function RecommendationsAdmin() {
   const [items, setItems] = useState<Recommendation[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
 
   async function load() {
-    const data = await fetch('/api/admin/recommendations').then((r) => r.json())
+    const [data, cats] = await Promise.all([
+      fetch('/api/admin/recommendations').then((r) => r.json()),
+      fetch('/api/admin/lookup-values?type=recommendation_category').then((r) => r.json()),
+    ])
     setItems(data)
+    setCategories(cats)
+    setForm((f) => ({ ...f, category: f.category || cats[0]?.value || '' }))
   }
 
   useEffect(() => { load() }, [])
@@ -86,11 +94,9 @@ export default function RecommendationsAdmin() {
           <h2 className="font-medium">{editingId ? 'Edit Recommendation' : 'New Recommendation'}</h2>
           <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
           <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input">
-            <option value="tech">Tech</option>
-            <option value="food">Food</option>
-            <option value="costco">Costco</option>
-            <option value="entertainment">Entertainment</option>
-            <option value="general">General</option>
+            {categories.map((cat) => (
+              <option key={cat.value} value={cat.value}>{cat.label}</option>
+            ))}
           </select>
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
           <input placeholder="Link URL" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="input" />

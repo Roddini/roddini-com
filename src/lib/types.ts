@@ -13,12 +13,21 @@ export type Podcast = {
 export type Recommendation = {
   id: number
   name: string
-  category: 'tech' | 'food' | 'costco' | 'entertainment' | 'general'
+  category: string
   description: string
   link?: string
   sort_order: number
   published: boolean
   featured_in_carousel: boolean
+}
+
+export type LookupValue = {
+  id: number
+  type: string
+  value: string
+  label: string
+  color: string
+  sort_order: number
 }
 
 export type Hobby = {
@@ -30,7 +39,6 @@ export type Hobby = {
   link?: string
   link_label?: string
   promo_code?: string
-  status: 'active' | 'placeholder'
   sort_order: number
   published: boolean
   featured_in_carousel: boolean

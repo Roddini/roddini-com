@@ -46,24 +46,34 @@ export default function SideNav({ hiddenSectionIds = [] }: { hiddenSectionIds?: 
     }
   }, [])
 
-  // Track active section
+  // Track active section via scroll position
   useEffect(() => {
-    const observers: IntersectionObserver[] = []
+    const sectionEls = sections
+      .map(({ id }) => ({ id, el: document.getElementById(id) }))
+      .filter((x): x is { id: string; el: HTMLElement } => x.el !== null)
 
-    sections.forEach(({ id }) => {
-      const el = document.getElementById(id)
-      if (!el) return
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActive(id)
-        },
-        { threshold: 0.25, rootMargin: '-10% 0px -60% 0px' }
-      )
-      observer.observe(el)
-      observers.push(observer)
-    })
+    const update = () => {
+      const vh = window.innerHeight
+      const zoneTop = vh * 0.1
+      const zoneBottom = vh * 0.7
+      let bestId = sectionEls[0]?.id ?? 'hero'
+      let bestOverlap = -Infinity
 
-    return () => observers.forEach((o) => o.disconnect())
+      for (const { id, el } of sectionEls) {
+        const rect = el.getBoundingClientRect()
+        const overlap = Math.min(rect.bottom, zoneBottom) - Math.max(rect.top, zoneTop)
+        if (overlap > bestOverlap) {
+          bestOverlap = overlap
+          bestId = id
+        }
+      }
+
+      setActive(bestId)
+    }
+
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
   }, [])
 
   const scrollTo = (id: string) => {

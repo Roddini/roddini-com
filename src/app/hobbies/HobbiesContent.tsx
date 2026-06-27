@@ -46,18 +46,6 @@ export default function HobbiesContent({ hobbies }: { hobbies: Hobby[] }) {
                 border: '1px solid rgba(0,212,170,0.12)',
               }}
             >
-              {hobby.status === 'placeholder' && (
-                <span
-                  className="text-[9px] tracking-widest uppercase mb-4 inline-block px-2 py-0.5 rounded-full"
-                  style={{
-                    color: 'rgba(100,116,139,0.6)',
-                    border: '1px solid rgba(100,116,139,0.2)',
-                  }}
-                >
-                  Coming soon
-                </span>
-              )}
-
               <h2 className="text-2xl font-light text-white mb-1">{hobby.name}</h2>
               <p className="text-[11px] tracking-widest uppercase mb-5" style={{ color: '#00d4aa', opacity: 0.7 }}>
                 {hobby.tagline}

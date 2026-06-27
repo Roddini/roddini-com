@@ -122,15 +122,7 @@ export default function HobbiesCarousel({ items }: { items: Hobby[] }) {
                     border: '1px solid rgba(0,212,170,0.12)',
                   }}
                 >
-                  {item.status === 'placeholder' && (
-                    <span
-                      className="text-[9px] tracking-widest uppercase mb-3 shrink-0"
-                      style={{ color: 'rgba(100,116,139,0.5)' }}
-                    >
-                      Coming soon
-                    </span>
-                  )}
-                  <h3 className="text-xl font-light text-white mb-1 shrink-0">{item.name}</h3>
+<h3 className="text-xl font-light text-white mb-1 shrink-0">{item.name}</h3>
                   <p className="text-[11px] tracking-widest uppercase mb-3 shrink-0" style={{ color: '#00d4aa', opacity: 0.7 }}>
                     {item.tagline}
                   </p>

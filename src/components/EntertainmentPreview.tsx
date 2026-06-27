@@ -10,19 +10,20 @@ const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-const FREQUENCY_COLORS: Record<string, string> = {
-  always: '#00d4aa',
-  sometimes: '#22d3ee',
-  occasionally: '#0ea5e9',
-}
+const FALLBACK_COLOR = '#00d4aa'
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  always: 'Always On',
-  sometimes: 'Sometimes',
-  occasionally: 'Occasionally',
-}
+type FrequencyOption = { value: string; label: string; color: string }
 
-export default function EntertainmentPreview({ items }: { items: Podcast[] }) {
+export default function EntertainmentPreview({
+  items,
+  frequencyOptions = [],
+}: {
+  items: Podcast[]
+  frequencyOptions?: FrequencyOption[]
+}) {
+  const freqMap = Object.fromEntries(frequencyOptions.map((f) => [f.value, f]))
+  const getFreqColor = (v: string) => freqMap[v]?.color ?? FALLBACK_COLOR
+  const getFreqLabel = (v: string) => freqMap[v]?.label ?? v
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
@@ -102,7 +103,7 @@ export default function EntertainmentPreview({ items }: { items: Podcast[] }) {
         >
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             {virtualCards.map(({ virtualIdx, offset, item }) => {
-              const freqColor = FREQUENCY_COLORS[item.frequency]
+              const freqColor = getFreqColor(item.frequency)
               return (
                 <motion.div
                   key={virtualIdx}
@@ -145,7 +146,7 @@ export default function EntertainmentPreview({ items }: { items: Podcast[] }) {
                           border: `1px solid ${freqColor}30`,
                         }}
                       >
-                        {FREQUENCY_LABELS[item.frequency]}
+                        {getFreqLabel(item.frequency)}
                       </span>
                       <span
                         className="text-[9px] tracking-widest uppercase"

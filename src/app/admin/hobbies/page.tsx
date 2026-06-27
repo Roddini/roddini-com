@@ -13,14 +13,13 @@ type Hobby = {
   link: string
   link_label: string
   promo_code: string
-  status: 'active' | 'placeholder'
   sort_order: number
   published: boolean
   featured_in_carousel: boolean
 }
 
-type HobbyForm = { name: string; tagline: string; description: string; details: string; link: string; link_label: string; promo_code: string; status: 'active' | 'placeholder'; sort_order: number }
-const emptyForm: HobbyForm = { name: '', tagline: '', description: '', details: '', link: '', link_label: '', promo_code: '', status: 'active', sort_order: 0 }
+type HobbyForm = { name: string; tagline: string; description: string; details: string; link: string; link_label: string; promo_code: string; sort_order: number }
+const emptyForm: HobbyForm = { name: '', tagline: '', description: '', details: '', link: '', link_label: '', promo_code: '', sort_order: 0 }
 
 export default function HobbiesAdmin() {
   const [items, setItems] = useState<Hobby[]>([])
@@ -72,7 +71,7 @@ export default function HobbiesAdmin() {
   }
 
   function startEdit(item: Hobby) {
-    setForm({ name: item.name, tagline: item.tagline ?? '', description: item.description ?? '', details: (item.details ?? []).join('\n'), link: item.link ?? '', link_label: item.link_label ?? '', promo_code: item.promo_code ?? '', status: item.status, sort_order: item.sort_order })
+    setForm({ name: item.name, tagline: item.tagline ?? '', description: item.description ?? '', details: (item.details ?? []).join('\n'), link: item.link ?? '', link_label: item.link_label ?? '', promo_code: item.promo_code ?? '', sort_order: item.sort_order })
     setEditingId(item.id)
     setShowForm(true)
   }
@@ -97,11 +96,7 @@ export default function HobbiesAdmin() {
           <input placeholder="Link URL" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="input" />
           <input placeholder="Link Label" value={form.link_label} onChange={(e) => setForm({ ...form, link_label: e.target.value })} className="input" />
           <input placeholder="Promo Code" value={form.promo_code} onChange={(e) => setForm({ ...form, promo_code: e.target.value })} className="input" />
-          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as 'active' | 'placeholder' })} className="input">
-            <option value="active">Active</option>
-            <option value="placeholder">Placeholder</option>
-          </select>
-          <input type="number" placeholder="Sort order" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="input" />
+<input type="number" placeholder="Sort order" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="input" />
           <div className="flex gap-2">
             <button onClick={save} disabled={!form.name} className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-sm disabled:opacity-50 transition-colors">Save</button>
             <button onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">Cancel</button>

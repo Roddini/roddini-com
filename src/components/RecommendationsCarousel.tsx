@@ -10,15 +10,15 @@ const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-const CATEGORY_COLORS: Record<string, string> = {
-  tech: '#22d3ee',
-  food: '#f59e0b',
-  costco: '#0ea5e9',
-  entertainment: '#a78bfa',
-  general: '#00d4aa',
-}
+const FALLBACK_COLOR = '#00d4aa'
 
-export default function RecommendationsCarousel({ items }: { items: Recommendation[] }) {
+export default function RecommendationsCarousel({
+  items,
+  categoryColors = {},
+}: {
+  items: Recommendation[]
+  categoryColors?: Record<string, string>
+}) {
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
@@ -98,7 +98,7 @@ export default function RecommendationsCarousel({ items }: { items: Recommendati
         >
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             {virtualCards.map(({ virtualIdx, offset, item }) => {
-              const accentColor = CATEGORY_COLORS[item.category] ?? '#00d4aa'
+              const accentColor = categoryColors[item.category] ?? FALLBACK_COLOR
               return (
                 <motion.div
                   key={virtualIdx}

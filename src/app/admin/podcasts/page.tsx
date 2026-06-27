@@ -9,25 +9,32 @@ type Podcast = {
   name: string
   description: string
   category: string
-  frequency: 'always' | 'sometimes' | 'occasionally'
+  frequency: string
   link: string
   sort_order: number
   published: boolean
   featured_in_carousel: boolean
 }
 
-type PodcastForm = { name: string; description: string; category: string; frequency: 'always' | 'sometimes' | 'occasionally'; link: string; sort_order: number }
-const emptyForm: PodcastForm = { name: '', description: '', category: '', frequency: 'always', link: '', sort_order: 0 }
+type FrequencyOption = { value: string; label: string }
+type PodcastForm = { name: string; description: string; category: string; frequency: string; link: string; sort_order: number }
+const emptyForm: PodcastForm = { name: '', description: '', category: '', frequency: '', link: '', sort_order: 0 }
 
 export default function PodcastsAdmin() {
   const [podcasts, setPodcasts] = useState<Podcast[]>([])
+  const [frequencies, setFrequencies] = useState<FrequencyOption[]>([])
   const [form, setForm] = useState<PodcastForm>(emptyForm)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
 
   async function load() {
-    const data = await fetch('/api/admin/podcasts').then((r) => r.json())
+    const [data, freqs] = await Promise.all([
+      fetch('/api/admin/podcasts').then((r) => r.json()),
+      fetch('/api/admin/lookup-values?type=podcast_frequency').then((r) => r.json()),
+    ])
     setPodcasts(data)
+    setFrequencies(freqs)
+    setForm((f) => ({ ...f, frequency: f.frequency || freqs[0]?.value || '' }))
   }
 
   useEffect(() => { load() }, [])
@@ -89,10 +96,10 @@ export default function PodcastsAdmin() {
           <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
           <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input" />
-          <select value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value as typeof form.frequency })} className="input">
-            <option value="always">Always On</option>
-            <option value="sometimes">Sometimes</option>
-            <option value="occasionally">Occasionally</option>
+          <select value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })} className="input">
+            {frequencies.map((f) => (
+              <option key={f.value} value={f.value}>{f.label}</option>
+            ))}
           </select>
           <input placeholder="Link URL" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="input" />
           <input type="number" placeholder="Sort order" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="input" />

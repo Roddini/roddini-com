@@ -11,9 +11,20 @@ const geist = Geist({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://localhost:3000'),
   title: 'Andrew Roddini — Head of Talent',
   description:
     'People & Talent leader who builds recruiting and HR functions from zero and scales them through hypergrowth. Former Head of Talent at Varo.',
+  icons: {
+    icon: [{ url: '/icon.png', type: 'image/png' }],
+    apple: '/icon.png',
+  },
+  openGraph: {
+    title: 'Andrew Roddini — Head of Talent',
+    description:
+      'People & Talent leader who builds recruiting and HR functions from zero and scales them through hypergrowth. Former Head of Talent at Varo.',
+    images: ['/opengraph-image.jpg'],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
