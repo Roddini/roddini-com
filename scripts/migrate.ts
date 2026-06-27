@@ -72,6 +72,43 @@ async function migrate() {
   `
 
   await sql`
+    CREATE TABLE IF NOT EXISTS projects (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      company TEXT,
+      year TEXT,
+      description TEXT,
+      tags TEXT[],
+      sort_order INTEGER DEFAULT 0,
+      published BOOLEAN DEFAULT true,
+      featured_in_carousel BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS fun_projects (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      company TEXT,
+      year TEXT,
+      description TEXT,
+      tags TEXT[],
+      sort_order INTEGER DEFAULT 0,
+      published BOOLEAN DEFAULT true,
+      featured_in_carousel BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  await sql`
+    INSERT INTO site_sections (section_key, visible) VALUES
+      ('projects', true),
+      ('funProjects', true)
+    ON CONFLICT (section_key) DO NOTHING
+  `
+
+  await sql`
     CREATE TABLE IF NOT EXISTS site_sections (
       section_key TEXT PRIMARY KEY,
       visible BOOLEAN DEFAULT true

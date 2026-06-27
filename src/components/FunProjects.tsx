@@ -2,15 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
-import { RESUME } from '@/data/resume'
+import type { FunProject } from '@/lib/types'
 
 const CARD_W = 300
 const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-export default function FunProjects() {
-  const projects = RESUME.funProjects
+export default function FunProjects({ items }: { items: FunProject[] }) {
+  const projects = items
   const n = projects.length
   const [rawIdx, setRawIdx] = useState(0)
   const [centerHovered, setCenterHovered] = useState(false)

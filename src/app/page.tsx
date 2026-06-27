@@ -12,14 +12,16 @@ import RecommendationsCarousel from '@/components/RecommendationsCarousel'
 import EntertainmentPreview from '@/components/EntertainmentPreview'
 import Contact from '@/components/Contact'
 import { sql } from '@/lib/db'
-import type { Hobby, Recommendation, Podcast, CareerHighlight } from '@/lib/types'
+import type { Hobby, Recommendation, Podcast, CareerHighlight, Project, FunProject } from '@/lib/types'
 
 export default async function Home() {
-  const [hobbies, recommendations, podcasts, careerHighlights, siteSections] = await Promise.all([
+  const [hobbies, recommendations, podcasts, careerHighlights, projects, funProjects, siteSections] = await Promise.all([
     sql`SELECT * FROM hobbies WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Hobby[],
     sql`SELECT * FROM recommendations WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Recommendation[],
     sql`SELECT * FROM podcasts WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Podcast[],
     sql`SELECT * FROM career_highlights WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as CareerHighlight[],
+    sql`SELECT * FROM projects WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Project[],
+    sql`SELECT * FROM fun_projects WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as FunProject[],
     sql`SELECT section_key, visible FROM site_sections` as unknown as { section_key: string; visible: boolean }[],
   ])
 
@@ -46,12 +48,16 @@ export default async function Home() {
           </SectionReveal>
         )}
         <Timeline />
-        <SectionReveal>
-          <Projects />
-        </SectionReveal>
-        <SectionReveal>
-          <FunProjects />
-        </SectionReveal>
+        {sections.projects !== false && (
+          <SectionReveal>
+            <Projects items={projects} />
+          </SectionReveal>
+        )}
+        {sections.funProjects !== false && (
+          <SectionReveal>
+            <FunProjects items={funProjects} />
+          </SectionReveal>
+        )}
         <SectionReveal>
           <Education />
         </SectionReveal>

@@ -36,6 +36,20 @@ export type Hobby = {
   featured_in_carousel: boolean
 }
 
+export type Project = {
+  id: number
+  name: string
+  company: string
+  year: string
+  description: string
+  tags: string[]
+  sort_order: number
+  published: boolean
+  featured_in_carousel: boolean
+}
+
+export type FunProject = Project
+
 export type CareerHighlight = {
   id: number
   headline: string

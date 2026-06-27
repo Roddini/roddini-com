@@ -7,6 +7,8 @@ import Toggle from './components/Toggle'
 type Section = { section_key: string; visible: boolean }
 
 const sectionLabels: Record<string, string> = {
+  projects: 'Projects',
+  funProjects: 'Fun Projects',
   careerHighlights: 'Career Highlights',
   hobbies: 'Hobbies',
   recommendations: 'Recommendations',
