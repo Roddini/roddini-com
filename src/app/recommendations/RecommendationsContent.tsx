@@ -4,7 +4,7 @@ import { useState } from 'react'
 import StarField from '@/components/StarField'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import type { SanityRecommendation } from '@/sanity/types'
+import type { Recommendation } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<string, string> = {
   tech: '#22d3ee',
@@ -23,7 +23,7 @@ const CATEGORIES = [
   { value: 'general', label: 'General' },
 ]
 
-export default function RecommendationsContent({ recommendations }: { recommendations: SanityRecommendation[] }) {
+export default function RecommendationsContent({ recommendations }: { recommendations: Recommendation[] }) {
   const [activeCategory, setActiveCategory] = useState('all')
 
   const filtered = activeCategory === 'all'
@@ -87,7 +87,7 @@ export default function RecommendationsContent({ recommendations }: { recommenda
             const accentColor = CATEGORY_COLORS[rec.category] ?? '#00d4aa'
             return (
               <motion.div
-                key={rec._id}
+                key={rec.id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

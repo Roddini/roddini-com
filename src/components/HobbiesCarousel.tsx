@@ -3,14 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Link from 'next/link'
-import type { SanityHobby } from '@/sanity/types'
+import type { Hobby } from '@/lib/types'
 
 const CARD_W = 300
 const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-export default function HobbiesCarousel({ items }: { items: SanityHobby[] }) {
+export default function HobbiesCarousel({ items }: { items: Hobby[] }) {
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
@@ -145,9 +145,9 @@ export default function HobbiesCarousel({ items }: { items: SanityHobby[] }) {
                   {offset === 0 && !centerHovered && item.description.length > 100 && (
                     <p className="text-xs mt-1 shrink-0" style={{ color: 'rgba(0,212,170,0.45)' }}>···</p>
                   )}
-                  {item.promoCode && (
+                  {item.promo_code && (
                     <p className="mt-2 text-[10px] tracking-widest uppercase shrink-0" style={{ color: 'rgba(0,212,170,0.6)' }}>
-                      Code: {item.promoCode}
+                      Code: {item.promo_code}
                     </p>
                   )}
                 </motion.div>

@@ -3,7 +3,7 @@
 import StarField from '@/components/StarField'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import type { SanityPodcast } from '@/sanity/types'
+import type { Podcast } from '@/lib/types'
 
 const FREQUENCY_ORDER = ['always', 'sometimes', 'occasionally']
 
@@ -19,7 +19,7 @@ const FREQUENCY_LABELS: Record<string, string> = {
   occasionally: 'Occasionally',
 }
 
-export default function EntertainmentContent({ podcasts }: { podcasts: SanityPodcast[] }) {
+export default function EntertainmentContent({ podcasts }: { podcasts: Podcast[] }) {
   const podcastsByFrequency = FREQUENCY_ORDER.map((freq) => ({
     freq,
     podcasts: podcasts.filter((p) => p.frequency === freq),
@@ -69,7 +69,7 @@ export default function EntertainmentContent({ podcasts }: { podcasts: SanityPod
                 <div className="flex flex-col gap-3">
                   {podcasts.map((podcast, i) => (
                     <motion.div
-                      key={podcast._id}
+                      key={podcast.id}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: (groupIdx * 0.1) + (i * 0.06), duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

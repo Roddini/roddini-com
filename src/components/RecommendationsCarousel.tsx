@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Link from 'next/link'
-import type { SanityRecommendation } from '@/sanity/types'
+import type { Recommendation } from '@/lib/types'
 
 const CARD_W = 300
 const OFFSET = CARD_W + 36
@@ -18,7 +18,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   general: '#00d4aa',
 }
 
-export default function RecommendationsCarousel({ items }: { items: SanityRecommendation[] }) {
+export default function RecommendationsCarousel({ items }: { items: Recommendation[] }) {
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)

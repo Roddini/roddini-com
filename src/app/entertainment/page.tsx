@@ -1,10 +1,8 @@
-import { client } from '@/sanity/client'
-import type { SanityPodcast } from '@/sanity/types'
+import { sql } from '@/lib/db'
+import type { Podcast } from '@/lib/types'
 import EntertainmentContent from './EntertainmentContent'
 
-export const revalidate = 60
-
 export default async function EntertainmentPage() {
-  const podcasts = await client.fetch<SanityPodcast[]>(`*[_type == "podcast"] | order(order asc)`)
+  const podcasts = await sql`SELECT * FROM podcasts WHERE published = true ORDER BY sort_order ASC` as unknown as Podcast[]
   return <EntertainmentContent podcasts={podcasts} />
 }

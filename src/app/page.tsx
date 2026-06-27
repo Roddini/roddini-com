@@ -11,26 +11,26 @@ import HobbiesCarousel from '@/components/HobbiesCarousel'
 import RecommendationsCarousel from '@/components/RecommendationsCarousel'
 import EntertainmentPreview from '@/components/EntertainmentPreview'
 import Contact from '@/components/Contact'
-import { client } from '@/sanity/client'
-import type { SanityHobby, SanityRecommendation, SanityPodcast, SanityCareerHighlight, SanityConfig } from '@/sanity/types'
-
-export const revalidate = 60
+import { sql } from '@/lib/db'
+import type { Hobby, Recommendation, Podcast, CareerHighlight } from '@/lib/types'
 
 export default async function Home() {
-  const [hobbies, recommendations, podcasts, careerHighlights, siteConfig] = await Promise.all([
-    client.fetch<SanityHobby[]>(`*[_type == "hobby"] | order(order asc)`),
-    client.fetch<SanityRecommendation[]>(`*[_type == "recommendation"] | order(order asc)`),
-    client.fetch<SanityPodcast[]>(`*[_type == "podcast"] | order(order asc)`),
-    client.fetch<SanityCareerHighlight[]>(`*[_type == "careerHighlight"] | order(order asc)`),
-    client.fetch<SanityConfig>(`*[_type == "siteConfig"][0]`),
+  const [hobbies, recommendations, podcasts, careerHighlights, siteSections] = await Promise.all([
+    sql`SELECT * FROM hobbies WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Hobby[],
+    sql`SELECT * FROM recommendations WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Recommendation[],
+    sql`SELECT * FROM podcasts WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Podcast[],
+    sql`SELECT * FROM career_highlights WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as CareerHighlight[],
+    sql`SELECT section_key, visible FROM site_sections` as unknown as { section_key: string; visible: boolean }[],
   ])
 
+  const sections = Object.fromEntries(siteSections.map((s) => [s.section_key, s.visible]))
+
   const hiddenSectionIds = [
-    siteConfig?.careerHighlights === false && 'career-highlights',
-    siteConfig?.hobbies === false && 'hobbies',
-    siteConfig?.recommendations === false && 'recommendations',
-    siteConfig?.entertainment === false && 'entertainment',
-    siteConfig?.contact === false && 'contact',
+    sections.careerHighlights === false && 'career-highlights',
+    sections.hobbies === false && 'hobbies',
+    sections.recommendations === false && 'recommendations',
+    sections.entertainment === false && 'entertainment',
+    sections.contact === false && 'contact',
   ].filter(Boolean) as string[]
 
   return (
@@ -40,7 +40,7 @@ export default async function Home() {
 
       <div className="relative" style={{ zIndex: 1 }}>
         <Hero />
-        {siteConfig?.careerHighlights !== false && (
+        {sections.careerHighlights !== false && (
           <SectionReveal>
             <CareerHighlights items={careerHighlights} />
           </SectionReveal>
@@ -55,22 +55,22 @@ export default async function Home() {
         <SectionReveal>
           <Education />
         </SectionReveal>
-        {siteConfig?.contact !== false && (
+        {sections.contact !== false && (
           <SectionReveal>
             <Contact />
           </SectionReveal>
         )}
-        {siteConfig?.hobbies !== false && (
+        {sections.hobbies !== false && (
           <SectionReveal>
             <HobbiesCarousel items={hobbies} />
           </SectionReveal>
         )}
-        {siteConfig?.recommendations !== false && (
+        {sections.recommendations !== false && (
           <SectionReveal>
             <RecommendationsCarousel items={recommendations} />
           </SectionReveal>
         )}
-        {siteConfig?.entertainment !== false && (
+        {sections.entertainment !== false && (
           <SectionReveal>
             <EntertainmentPreview items={podcasts} />
           </SectionReveal>

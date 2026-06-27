@@ -9,7 +9,10 @@
       "Bash(npm install *)",
       "Bash(mkdir -p \"/Users/andrewroddini/Documents/coding projects/portfolio/src/app/studio/[[...tool]]\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k\\) for k in d.get\\('exports',{}\\).keys\\(\\)]\")",
-      "Bash(node scripts/migrate.mjs)"
+      "Bash(node scripts/migrate.mjs)",
+      "Bash(npx tsx *)",
+      "Bash(node -e \"require\\('dotenv'\\)\")",
+      "Bash(npm uninstall *)"
     ]
   }
 }

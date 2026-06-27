@@ -44,3 +44,21 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Admin form inputs */
+.input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.875rem;
+  outline: none;
+}
+.input:focus {
+  border-color: rgba(255,255,255,0.3);
+}
+.input option {
+  background: #1a1f2e;
+}

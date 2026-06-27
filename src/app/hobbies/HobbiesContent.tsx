@@ -3,9 +3,9 @@
 import StarField from '@/components/StarField'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import type { SanityHobby } from '@/sanity/types'
+import type { Hobby } from '@/lib/types'
 
-export default function HobbiesContent({ hobbies }: { hobbies: SanityHobby[] }) {
+export default function HobbiesContent({ hobbies }: { hobbies: Hobby[] }) {
   return (
     <main className="relative min-h-screen" style={{ background: '#060a13' }}>
       <StarField />
@@ -35,7 +35,7 @@ export default function HobbiesContent({ hobbies }: { hobbies: SanityHobby[] }) 
         <div className="flex flex-col gap-8">
           {hobbies.map((hobby, i) => (
             <motion.div
-              key={hobby._id}
+              key={hobby.id}
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -78,7 +78,7 @@ export default function HobbiesContent({ hobbies }: { hobbies: SanityHobby[] }) 
                 </ul>
               )}
 
-              {hobby.promoCode && (
+              {hobby.promo_code && (
                 <div
                   className="inline-flex items-center gap-3 px-4 py-2 rounded-full mb-4"
                   style={{
@@ -90,7 +90,7 @@ export default function HobbiesContent({ hobbies }: { hobbies: SanityHobby[] }) 
                     Promo code
                   </span>
                   <span className="text-sm font-light tracking-widest" style={{ color: '#00d4aa' }}>
-                    {hobby.promoCode}
+                    {hobby.promo_code}
                   </span>
                 </div>
               )}
@@ -106,7 +106,7 @@ export default function HobbiesContent({ hobbies }: { hobbies: SanityHobby[] }) 
                     onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = '#00d4aa')}
                     onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'rgba(0,212,170,0.5)')}
                   >
-                    {hobby.linkLabel ?? hobby.link} →
+                    {hobby.link_label ?? hobby.link} →
                   </a>
                 </div>
               )}

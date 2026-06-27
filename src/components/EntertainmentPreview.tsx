@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
 import Link from 'next/link'
-import type { SanityPodcast } from '@/sanity/types'
+import type { Podcast } from '@/lib/types'
 
 const CARD_W = 300
 const OFFSET = CARD_W + 36
@@ -22,7 +22,7 @@ const FREQUENCY_LABELS: Record<string, string> = {
   occasionally: 'Occasionally',
 }
 
-export default function EntertainmentPreview({ items }: { items: SanityPodcast[] }) {
+export default function EntertainmentPreview({ items }: { items: Podcast[] }) {
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)

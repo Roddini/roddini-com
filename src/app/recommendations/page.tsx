@@ -1,10 +1,8 @@
-import { client } from '@/sanity/client'
-import type { SanityRecommendation } from '@/sanity/types'
+import { sql } from '@/lib/db'
+import type { Recommendation } from '@/lib/types'
 import RecommendationsContent from './RecommendationsContent'
 
-export const revalidate = 60
-
 export default async function RecommendationsPage() {
-  const recommendations = await client.fetch<SanityRecommendation[]>(`*[_type == "recommendation"] | order(order asc)`)
+  const recommendations = await sql`SELECT * FROM recommendations WHERE published = true ORDER BY sort_order ASC` as unknown as Recommendation[]
   return <RecommendationsContent recommendations={recommendations} />
 }

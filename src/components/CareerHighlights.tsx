@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
-import type { SanityCareerHighlight } from '@/sanity/types'
+import type { CareerHighlight } from '@/lib/types'
 
 const CARD_W = 320
 const OFFSET = CARD_W + 36
@@ -17,7 +17,7 @@ function hexToRgb(hex: string): string {
   return `${r},${g},${b}`
 }
 
-export default function CareerHighlights({ items }: { items: SanityCareerHighlight[] }) {
+export default function CareerHighlights({ items }: { items: CareerHighlight[] }) {
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
