@@ -10,8 +10,11 @@ const geist = Geist({
   weight: ['100', '200', '300', '400'],
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://localhost:3000'),
+  metadataBase: new URL(siteUrl),
   title: 'Andrew Roddini — Head of Talent',
   description:
     'People & Talent leader who builds recruiting and HR functions from zero and scales them through hypergrowth. Former Head of Talent at Varo.',
@@ -23,7 +26,6 @@ export const metadata: Metadata = {
     title: 'Andrew Roddini — Head of Talent',
     description:
       'People & Talent leader who builds recruiting and HR functions from zero and scales them through hypergrowth. Former Head of Talent at Varo.',
-    images: ['/opengraph-image.jpg'],
   },
 }
 
