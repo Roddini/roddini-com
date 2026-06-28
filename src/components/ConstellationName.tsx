@@ -29,7 +29,7 @@ export default function ConstellationName() {
     offscreen.height = H
     const off = offscreen.getContext('2d')!
     off.fillStyle = 'white'
-    off.font = '400 52px "Geist", system-ui, sans-serif'
+    off.font = '400 72px "Geist", system-ui, sans-serif'
     off.textAlign = 'center'
     off.textBaseline = 'middle'
     off.fillText('Andrew Roddini', W / 2, H / 2)
@@ -94,7 +94,7 @@ export default function ConstellationName() {
 
   return (
     <div className="flex justify-center py-8 px-4">
-      <canvas ref={canvasRef} width={720} height={90} style={{ maxWidth: '100%' }} />
+      <canvas ref={canvasRef} width={960} height={120} style={{ maxWidth: '100%' }} />
     </div>
   )
 }

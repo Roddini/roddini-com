@@ -59,7 +59,7 @@ export default function HobbiesCarousel({ items }: { items: Hobby[] }) {
   }))
 
   return (
-    <section id="hobbies" className="relative pt-40 pb-24" style={{ zIndex: 1 }}>
+    <section id="hobbies" className="relative pt-16 pb-24" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
         <div className="flex items-center gap-4 mb-16">
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />

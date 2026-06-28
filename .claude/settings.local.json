@@ -12,7 +12,10 @@
       "Bash(node scripts/migrate.mjs)",
       "Bash(npx tsx *)",
       "Bash(node -e \"require\\('dotenv'\\)\")",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(git stash *)"
     ]
   }
 }

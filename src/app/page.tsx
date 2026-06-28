@@ -11,7 +11,7 @@ import HobbiesCarousel from '@/components/HobbiesCarousel'
 import RecommendationsCarousel from '@/components/RecommendationsCarousel'
 import EntertainmentPreview from '@/components/EntertainmentPreview'
 import Contact from '@/components/Contact'
-import ConstellationName from '@/components/ConstellationName'
+import ConstellationDog from '@/components/ConstellationDog'
 export const dynamic = 'force-dynamic'
 
 import { sql } from '@/lib/db'
@@ -76,7 +76,7 @@ export default async function Home() {
           </SectionReveal>
         )}
         {(hobbies.length > 0 || recommendations.length > 0 || podcasts.length > 0) && (
-          <ConstellationName />
+          <ConstellationDog />
         )}
         {sections.hobbies !== false && hobbies.length > 0 && (
           <SectionReveal>
