@@ -16,7 +16,7 @@ No test suite exists yet.
 
 ## Architecture
 
-This is a single-page portfolio site with a custom admin CMS backed by Neon (serverless Postgres).
+This is a portfolio site (roddini.com) with a custom admin CMS backed by Neon (serverless Postgres). It has a homepage plus dedicated pages at `/hobbies`, `/recommendations`, and `/entertainment`.
 
 ### Data sources
 
@@ -49,7 +49,7 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 
 **Timeline** (`src/components/Timeline.tsx` + `TimelineEntry.tsx`): Renders `RESUME.experience` as an alternating left/right layout using CSS grid (`grid-cols-[1fr_40px_1fr]`). Entrance animations use Framer Motion `whileInView` with `once: true`. Each entry has its own `accent` hex color defined in `resume.ts`; a local `hexToRgb` helper converts it for use in rgba strings.
 
-**SideNav** (`src/components/SideNav.tsx`): Fades in 1.2s after scrolling stops. Uses `IntersectionObserver` with `rootMargin: '-10% 0px -60% 0px'` to track active section. Hidden on mobile (`hidden md:flex`).
+**SideNav** (`src/components/SideNav.tsx`): Fades in 1.2s after scrolling stops. Uses a scroll-event listener with `getBoundingClientRect()` to track the active section — picks whichever section has the most overlap with the 10–70% viewport zone. Hidden on mobile (`hidden md:flex`). Dots for sections with no DB data are hidden via `hiddenSectionIds` prop.
 
 ## Tailwind
 

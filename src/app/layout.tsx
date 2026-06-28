@@ -10,8 +10,7 @@ const geist = Geist({
   weight: ['100', '200', '300', '400'],
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://roddini.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
