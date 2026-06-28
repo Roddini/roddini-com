@@ -26,6 +26,7 @@ export const metadata: Metadata = {
     title: 'Andrew Roddini — Head of Talent',
     description:
       'People & Talent leader who builds recruiting and HR functions from zero and scales them through hypergrowth. Former Head of Talent at Varo.',
+    images: [`${siteUrl}/og.jpg`],
   },
 }
 
