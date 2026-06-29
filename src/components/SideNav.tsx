@@ -17,7 +17,7 @@ const SECTIONS = [
   { id: 'entertainment', label: 'Listening' },
 ]
 
-export default function SideNav({ hiddenSectionIds = [] }: { hiddenSectionIds?: string[] }) {
+export default function SideNav({ hiddenSectionIds = [], navLabels = {} }: { hiddenSectionIds?: string[]; navLabels?: Record<string, string> }) {
   const sections = SECTIONS.filter((s) => !hiddenSectionIds.includes(s.id))
   const visible = useScrollVisibility()
   const [active, setActive] = useState('hero')
@@ -66,12 +66,13 @@ export default function SideNav({ hiddenSectionIds = [] }: { hiddenSectionIds?: 
     >
       {sections.map(({ id, label }) => {
         const isActive = active === id
+        const displayLabel = navLabels[id] ?? label
         return (
           <button
             key={id}
             onClick={() => scrollTo(id)}
             className="flex items-center gap-2.5 group"
-            aria-label={`Go to ${label}`}
+            aria-label={`Go to ${displayLabel}`}
           >
             <span
               className="text-[10px] tracking-[0.25em] uppercase font-light transition-all duration-300"
@@ -79,7 +80,7 @@ export default function SideNav({ hiddenSectionIds = [] }: { hiddenSectionIds?: 
                 color: isActive ? '#00d4aa' : 'rgba(100,116,139,0.6)',
               }}
             >
-              {label}
+              {displayLabel}
             </span>
             <div
               className="rounded-full transition-all duration-300"

@@ -17,7 +17,7 @@ function hexToRgb(hex: string): string {
   return `${r},${g},${b}`
 }
 
-export default function CareerHighlights({ items }: { items: CareerHighlight[] }) {
+export default function CareerHighlights({ items, sectionHeader = 'Career Highlights' }: { items: CareerHighlight[]; sectionHeader?: string }) {
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
@@ -77,7 +77,7 @@ export default function CareerHighlights({ items }: { items: CareerHighlight[] }
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Career Highlights
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

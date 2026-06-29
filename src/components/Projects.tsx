@@ -9,7 +9,7 @@ const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-export default function Projects({ items }: { items: Project[] }) {
+export default function Projects({ items, sectionHeader = 'Notable Projects' }: { items: Project[]; sectionHeader?: string }) {
   const projects = items
   const n = projects.length
   const [rawIdx, setRawIdx] = useState(0)
@@ -66,7 +66,7 @@ export default function Projects({ items }: { items: Project[] }) {
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Notable Projects
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

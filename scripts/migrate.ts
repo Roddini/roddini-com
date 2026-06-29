@@ -186,6 +186,62 @@ async function migrate() {
   await sql`ALTER TABLE recommendations DROP CONSTRAINT IF EXISTS recommendations_category_check`
   await sql`ALTER TABLE podcasts DROP CONSTRAINT IF EXISTS podcasts_frequency_check`
 
+  // Extend site_sections with editable label columns
+  await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS section_header TEXT`
+  await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS nav_label TEXT`
+
+  // Seed defaults for existing rows
+  await sql`UPDATE site_sections SET section_header = 'Career Highlights', nav_label = 'Highlights' WHERE section_key = 'careerHighlights'`
+  await sql`UPDATE site_sections SET section_header = 'Notable Projects', nav_label = 'Projects' WHERE section_key = 'projects'`
+  await sql`UPDATE site_sections SET section_header = 'Projects That Delighted…the fun ones', nav_label = 'Fun' WHERE section_key = 'funProjects'`
+  await sql`UPDATE site_sections SET section_header = 'Hobbies', nav_label = 'Hobbies' WHERE section_key = 'hobbies'`
+  await sql`UPDATE site_sections SET section_header = 'Things I Recommend', nav_label = 'Picks' WHERE section_key = 'recommendations'`
+  await sql`UPDATE site_sections SET section_header = 'What I''m Into', nav_label = 'Listening' WHERE section_key = 'entertainment'`
+  await sql`UPDATE site_sections SET section_header = 'Get in Touch', nav_label = 'Contact' WHERE section_key = 'contact'`
+
+  // Add rows for always-visible sections (hero, experience, education) — label storage only
+  await sql`
+    INSERT INTO site_sections (section_key, visible, section_header, nav_label) VALUES
+      ('hero',       true, null,         'Intro'),
+      ('experience', true, 'Experience', 'Experience'),
+      ('education',  true, 'Education',  'Education')
+    ON CONFLICT (section_key) DO NOTHING
+  `
+
+  // nav_links table for hamburger menu
+  await sql`
+    CREATE TABLE IF NOT EXISTS nav_links (
+      id         SERIAL PRIMARY KEY,
+      href       TEXT NOT NULL,
+      label      TEXT NOT NULL,
+      sort_order INT  DEFAULT 0
+    )
+  `
+  await sql`
+    INSERT INTO nav_links (href, label, sort_order) VALUES
+      ('/', 'Home', 0),
+      ('/hobbies', 'Hobbies', 1),
+      ('/recommendations', 'Recommendations', 2),
+      ('/entertainment', 'Entertainment', 3)
+    ON CONFLICT DO NOTHING
+  `
+
+  // site_config table for hero content
+  await sql`
+    CREATE TABLE IF NOT EXISTS site_config (
+      key   TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `
+  await sql`
+    INSERT INTO site_config (key, value) VALUES
+      ('hero_name',     'Andrew Roddini'),
+      ('hero_title',    'People & Talent Leadership'),
+      ('hero_tagline_1','Building talent functions from zero.'),
+      ('hero_tagline_2','Scaling them through hypergrowth.')
+    ON CONFLICT (key) DO NOTHING
+  `
+
   console.log('Migrations complete.')
 }
 

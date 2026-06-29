@@ -3,7 +3,7 @@
 import { RESUME } from '@/data/resume'
 import TimelineEntry from './TimelineEntry'
 
-export default function Timeline() {
+export default function Timeline({ sectionHeader = 'Experience' }: { sectionHeader?: string }) {
   return (
     <section id="experience" className="relative py-24" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
@@ -14,7 +14,7 @@ export default function Timeline() {
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Experience
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

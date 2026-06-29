@@ -70,3 +70,19 @@ export type CareerHighlight = {
   published: boolean
   featured_in_carousel: boolean
 }
+
+export type SiteSection = {
+  section_key: string
+  visible: boolean
+  section_header: string | null
+  nav_label: string | null
+}
+
+export type NavLink = {
+  id: number
+  href: string
+  label: string
+  sort_order: number
+}
+
+export type SiteConfig = Record<string, string>

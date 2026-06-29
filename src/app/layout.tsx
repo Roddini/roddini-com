@@ -3,6 +3,8 @@ import { Geist } from 'next/font/google'
 import './globals.css'
 import NavMenu from '@/components/NavMenu'
 import Initials from '@/components/Initials'
+import { sql } from '@/lib/db'
+import type { NavLink } from '@/lib/types'
 
 const geist = Geist({
   variable: '--font-geist-sans',
@@ -29,11 +31,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const navLinks = await sql`SELECT href, label FROM nav_links ORDER BY sort_order ASC`
+    .catch(() => []) as unknown as Pick<NavLink, 'href' | 'label'>[]
+
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full antialiased">
-        <NavMenu />
+        <NavMenu links={navLinks} />
         <Initials />
         {children}
       </body>

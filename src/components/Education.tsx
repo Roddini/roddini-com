@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { RESUME } from '@/data/resume'
 
-export default function Education() {
+export default function Education({ sectionHeader = 'Education' }: { sectionHeader?: string }) {
   const edu = RESUME.education
 
   return (
@@ -16,7 +16,7 @@ export default function Education() {
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Education
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

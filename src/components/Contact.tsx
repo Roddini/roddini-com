@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { RESUME } from '@/data/resume'
 
-export default function Contact() {
+export default function Contact({ sectionHeader = 'Get in Touch' }: { sectionHeader?: string }) {
   const contact = RESUME.contact
 
   return (
@@ -15,7 +15,7 @@ export default function Contact() {
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Get in Touch
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

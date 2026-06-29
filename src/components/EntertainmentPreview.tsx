@@ -17,9 +17,11 @@ type FrequencyOption = { value: string; label: string; color: string }
 export default function EntertainmentPreview({
   items,
   frequencyOptions = [],
+  sectionHeader = 'What I\'m Into',
 }: {
   items: Podcast[]
   frequencyOptions?: FrequencyOption[]
+  sectionHeader?: string
 }) {
   const freqMap = Object.fromEntries(frequencyOptions.map((f) => [f.value, f]))
   const getFreqColor = (v: string) => freqMap[v]?.color ?? FALLBACK_COLOR
@@ -80,7 +82,7 @@ export default function EntertainmentPreview({
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            What I&apos;m Into
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

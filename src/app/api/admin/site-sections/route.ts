@@ -7,9 +7,13 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const { section_key, visible } = await request.json()
+  const { section_key, visible, section_header, nav_label } = await request.json()
   const rows = await sql`
-    UPDATE site_sections SET visible = ${visible} WHERE section_key = ${section_key} RETURNING *
+    UPDATE site_sections SET
+      visible        = COALESCE(${visible},        visible),
+      section_header = COALESCE(${section_header}, section_header),
+      nav_label      = COALESCE(${nav_label},      nav_label)
+    WHERE section_key = ${section_key} RETURNING *
   `
   return NextResponse.json(rows[0])
 }

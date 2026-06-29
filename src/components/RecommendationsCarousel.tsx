@@ -15,9 +15,11 @@ const FALLBACK_COLOR = '#00d4aa'
 export default function RecommendationsCarousel({
   items,
   categoryColors = {},
+  sectionHeader = 'Things I Recommend',
 }: {
   items: Recommendation[]
   categoryColors?: Record<string, string>
+  sectionHeader?: string
 }) {
   if (!items || items.length === 0) return null
   const n = items.length
@@ -75,7 +77,7 @@ export default function RecommendationsCarousel({
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Things I Recommend
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

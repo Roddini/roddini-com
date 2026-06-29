@@ -2,7 +2,19 @@
 
 import { motion } from 'framer-motion'
 
-export default function Hero() {
+export default function Hero({
+  name = 'Andrew Roddini',
+  heroTitle = 'People & Talent Leadership',
+  taglines = ['Building talent functions from zero.', 'Scaling them through hypergrowth.'],
+}: {
+  name?: string
+  heroTitle?: string
+  taglines?: [string, string]
+}) {
+  const nameParts = name.trim().split(' ')
+  const firstName = nameParts.slice(0, -1).join(' ') || name
+  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
+
   return (
     <section
       id="hero"
@@ -31,22 +43,26 @@ export default function Hero() {
           className="text-xs uppercase font-light"
           style={{ color: '#00d4aa' }}
         >
-          People &amp; Talent Leadership
+          {heroTitle}
         </motion.p>
 
         <h1 className="text-7xl md:text-9xl font-extralight tracking-tight text-white leading-none">
-          Andrew
-          <br />
-          <span
-            style={{
-              background: 'linear-gradient(135deg, #00d4aa 0%, #22d3ee 50%, #38bdf8 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
-            Roddini
-          </span>
+          {firstName}
+          {lastName && (
+            <>
+              <br />
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #00d4aa 0%, #22d3ee 50%, #38bdf8 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                {lastName}
+              </span>
+            </>
+          )}
         </h1>
 
         <motion.p
@@ -56,9 +72,9 @@ export default function Hero() {
           className="text-base md:text-lg font-light max-w-sm mx-auto leading-relaxed"
           style={{ color: 'rgba(148,163,184,0.85)' }}
         >
-          Building talent functions from zero.
+          {taglines[0]}
           <br />
-          Scaling them through hypergrowth.
+          {taglines[1]}
         </motion.p>
       </motion.div>
 

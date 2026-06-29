@@ -5,14 +5,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const NAV_LINKS = [
+const DEFAULT_NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/hobbies', label: 'Hobbies' },
   { href: '/recommendations', label: 'Recommendations' },
   { href: '/entertainment', label: 'Entertainment' },
 ]
 
-export default function NavMenu() {
+export default function NavMenu({ links }: { links?: { href: string; label: string }[] }) {
+  const NAV_LINKS = links && links.length > 0 ? links : DEFAULT_NAV_LINKS
   const [visible, setVisible] = useState(false)
   const [open, setOpen] = useState(false)
   const pathname = usePathname()

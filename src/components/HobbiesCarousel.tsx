@@ -10,7 +10,7 @@ const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-export default function HobbiesCarousel({ items }: { items: Hobby[] }) {
+export default function HobbiesCarousel({ items, sectionHeader = 'Hobbies' }: { items: Hobby[]; sectionHeader?: string }) {
   if (!items || items.length === 0) return null
   const n = items.length
   const [rawIdx, setRawIdx] = useState(0)
@@ -67,7 +67,7 @@ export default function HobbiesCarousel({ items }: { items: Hobby[] }) {
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Hobbies
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>

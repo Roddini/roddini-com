@@ -9,7 +9,7 @@ const OFFSET = CARD_W + 36
 const AUTO_INTERVAL = 5000
 const DRIFT_SPEED = 0.008
 
-export default function FunProjects({ items }: { items: FunProject[] }) {
+export default function FunProjects({ items, sectionHeader = 'Projects That Delighted…the fun ones' }: { items: FunProject[]; sectionHeader?: string }) {
   const projects = items
   const n = projects.length
   const [rawIdx, setRawIdx] = useState(0)
@@ -69,7 +69,7 @@ export default function FunProjects({ items }: { items: FunProject[] }) {
             className="text-[10px] tracking-[0.35em] uppercase font-light"
             style={{ color: 'rgba(0,212,170,0.6)' }}
           >
-            Projects That Delighted…the fun ones
+            {sectionHeader}
           </span>
           <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
         </div>
