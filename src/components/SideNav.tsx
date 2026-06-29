@@ -15,6 +15,7 @@ const SECTIONS = [
   { id: 'hobbies', label: 'Hobbies' },
   { id: 'recommendations', label: 'Picks' },
   { id: 'entertainment', label: 'Listening' },
+  { id: 'life-hacks', label: 'Life Hacks' },
 ]
 
 export default function SideNav({ hiddenSectionIds = [], navLabels = {} }: { hiddenSectionIds?: string[]; navLabels?: Record<string, string> }) {

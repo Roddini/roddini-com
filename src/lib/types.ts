@@ -86,3 +86,14 @@ export type NavLink = {
 }
 
 export type SiteConfig = Record<string, string>
+
+export type LifeHack = {
+  id: number
+  name: string
+  category: string
+  description: string
+  link?: string
+  sort_order: number
+  published: boolean
+  featured_in_carousel: boolean
+}

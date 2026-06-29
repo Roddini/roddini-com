@@ -67,7 +67,11 @@ export default function NavLinksAdminPage() {
         </div>
         {!showForm && (
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              const nextOrder = items.length > 0 ? Math.max(...items.map((i) => i.sort_order)) + 1 : 0
+              setForm({ label: '', href: '', sort_order: nextOrder })
+              setShowForm(true)
+            }}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             style={{ background: 'rgba(0,212,170,0.15)', color: '#00d4aa', border: '1px solid rgba(0,212,170,0.25)' }}
           >

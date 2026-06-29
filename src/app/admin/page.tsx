@@ -5,7 +5,7 @@ import AdminNav from './components/AdminNav'
 import Toggle from './components/Toggle'
 import type { SiteSection } from '@/lib/types'
 
-const VISIBILITY_KEYS = ['projects', 'funProjects', 'careerHighlights', 'hobbies', 'recommendations', 'entertainment', 'contact']
+const VISIBILITY_KEYS = ['projects', 'funProjects', 'careerHighlights', 'experience', 'education', 'hobbies', 'recommendations', 'entertainment', 'lifeHacks', 'contact']
 
 const sectionDisplayNames: Record<string, string> = {
   projects: 'Projects',
@@ -14,6 +14,7 @@ const sectionDisplayNames: Record<string, string> = {
   hobbies: 'Hobbies',
   recommendations: 'Recommendations',
   entertainment: 'Entertainment / Podcasts',
+  lifeHacks: 'Life Hacks',
   contact: 'Contact',
   hero: 'Hero',
   experience: 'Experience',
@@ -56,54 +57,22 @@ export default function AdminDashboard() {
     scheduleFieldSave(key, field, value)
   }
 
-  const visibilitySections = sections.filter((s) => VISIBILITY_KEYS.includes(s.section_key))
-  const labelOnlySections = sections.filter((s) => !VISIBILITY_KEYS.includes(s.section_key) && s.section_key !== 'hero')
+  const allSections = sections.filter((s) => VISIBILITY_KEYS.includes(s.section_key))
 
   return (
     <>
       <AdminNav />
       <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
 
-      <section className="mb-8">
+      <section>
         <h2 className="text-lg font-medium text-white/60 mb-4">Homepage Sections</h2>
         <div className="flex flex-col gap-3">
-          {visibilitySections.map((s) => (
+          {allSections.map((s) => (
             <div key={s.section_key} className="rounded-lg bg-white/5 px-4 py-3 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{sectionDisplayNames[s.section_key] ?? s.section_key}</span>
                 <Toggle checked={s.visible} onChange={(val) => toggleSection(s.section_key, val)} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] tracking-widest uppercase text-white/40 mb-1">Section Header</label>
-                  <input
-                    className="input w-full"
-                    value={s.section_header ?? ''}
-                    onChange={(e) => updateField(s.section_key, 'section_header', e.target.value)}
-                    placeholder="Section header text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] tracking-widest uppercase text-white/40 mb-1">Nav Label</label>
-                  <input
-                    className="input w-full"
-                    value={s.nav_label ?? ''}
-                    onChange={(e) => updateField(s.section_key, 'nav_label', e.target.value)}
-                    placeholder="Side nav label"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-lg font-medium text-white/60 mb-4">Always-Visible Sections</h2>
-        <div className="flex flex-col gap-3">
-          {labelOnlySections.map((s) => (
-            <div key={s.section_key} className="rounded-lg bg-white/5 px-4 py-3 flex flex-col gap-3">
-              <span className="font-medium">{sectionDisplayNames[s.section_key] ?? s.section_key}</span>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] tracking-widest uppercase text-white/40 mb-1">Section Header</label>

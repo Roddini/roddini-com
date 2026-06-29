@@ -13,6 +13,7 @@ const links = [
   { href: '/admin/hobbies', label: 'Hobbies' },
   { href: '/admin/categories', label: 'Categories' },
   { href: '/admin/chat', label: 'Chat Access' },
+  { href: '/admin/life-hacks', label: 'Life Hacks' },
   { href: '/admin/hero', label: 'Hero' },
   { href: '/admin/nav-links', label: 'Nav Links' },
 ]

@@ -25,13 +25,18 @@ There are **two** content sources — don't confuse them:
 - **`src/data/resume.ts`** — static source of truth for resume content (experience, projects, education). Edit this file directly to change that content.
 - **Neon database** — source of truth for dynamic content: podcasts, recommendations, hobbies, career highlights, and section visibility toggles. Managed via `/admin`. Connection via `DATABASE_URL` env var in `.env.local`.
 
-`src/lib/types.ts` defines the TypeScript types for all DB-backed content (`Podcast`, `Recommendation`, `Hobby`, `CareerHighlight`). The files in `src/data/entertainment.ts`, `src/data/hobbies.ts`, and `src/data/recommendations.ts` are legacy stubs — the live pages do not use them.
+`src/lib/types.ts` defines the TypeScript types for all DB-backed content (`Podcast`, `Recommendation`, `Hobby`, `CareerHighlight`, `SiteSection`, `NavLink`, `SiteConfig`). The files in `src/data/entertainment.ts`, `src/data/hobbies.ts`, and `src/data/recommendations.ts` are legacy stubs — the live pages do not use them.
 
 ### Database
 
 `src/lib/db.ts` exports a `sql` tagged-template function via `@neondatabase/serverless`. Pages query it directly in server components — no ORM, no abstraction layer. Cast results with `as unknown as Type[]` since Neon returns `Record<string, any>[]`.
 
-Tables: `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `site_sections`, `chat_sessions`, `chat_access_requests`. Each content table has `published` (show anywhere) and `featured_in_carousel` (show on homepage carousel). `site_sections` has one row per section with a `visible` boolean.
+Tables: `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `site_sections`, `chat_sessions`, `chat_access_requests`, `nav_links`, `site_config`.
+
+- Each content table has `published` (show anywhere) and `featured_in_carousel` (show on homepage carousel).
+- `site_sections` has one row per section with: `section_key` (string), `visible` (boolean), `section_header` (text — overrides the hardcoded heading in the component), `nav_label` (text — overrides the SideNav dot label). Keys: `hero`, `careerHighlights`, `experience`, `education`, `projects`, `funProjects`, `hobbies`, `recommendations`, `entertainment`, `contact`.
+- `nav_links` — rows with `id`, `href`, `label`, `sort_order`. Controls the hamburger menu. Managed at `/admin/nav-links`.
+- `site_config` — key/value table. Current keys: `hero_name`, `hero_title`, `hero_tagline_1`, `hero_tagline_2`. Managed at `/admin/hero`.
 
 ### Admin CMS
 
@@ -39,9 +44,24 @@ Password-protected at `/admin/*` via `src/proxy.ts` (Next.js 16 proxy convention
 
 Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/api/admin/[type]/route.ts` (GET + POST) and `src/app/api/admin/[type]/[id]/route.ts` (PATCH + DELETE).
 
+**Admin pages:**
+- `/admin` (dashboard) — toggle visibility + edit `section_header` / `nav_label` for all homepage sections, including `experience` and `education`. All sections are fully toggleable. Fields auto-save 600ms after typing stops.
+- `/admin/hero` — edit `hero_name`, `hero_title`, `hero_tagline_1`, `hero_tagline_2` via `site_config`. Auto-saves 600ms after typing.
+- `/admin/nav-links` — full CRUD for hamburger menu links (`nav_links` table). "Add Link" pre-populates `sort_order` as `max(existing) + 1`.
+
+**Admin API routes (beyond the standard CRUD pattern):**
+- `GET /api/admin/site-sections` — returns all `site_sections` rows including `section_header` and `nav_label`
+- `PATCH /api/admin/site-sections` — accepts `{ section_key, visible?, section_header?, nav_label? }` with COALESCE (only updates fields provided)
+- `GET /api/admin/site-config` — returns `{ key: value }` object for all rows
+- `PATCH /api/admin/site-config` — accepts `{ key, value }` to update a single config entry
+- `GET /api/admin/nav-links` — returns rows ordered by `sort_order`
+- `POST /api/admin/nav-links` — inserts a new link
+- `PATCH /api/admin/nav-links/[id]` — partial update (COALESCE)
+- `DELETE /api/admin/nav-links/[id]`
+
 ### Page composition
 
-**Homepage** (`src/app/page.tsx`): fetches all carousel content (`published = true AND featured_in_carousel = true`) and site section visibility from DB, then stacks: `StarField` → `SideNav` → `ChatWidget` → `Hero` → `CareerHighlights` → `Timeline` → `Projects` → `FunProjects` → `Education` → `Contact` → `ConstellationDog` → `HobbiesCarousel` → `RecommendationsCarousel` → `EntertainmentPreview`. Sections hidden via `site_sections` are omitted entirely.
+**Homepage** (`src/app/page.tsx`): fetches all carousel content (`published = true AND featured_in_carousel = true`), site section data, and `site_config` from DB, then stacks: `StarField` → `SideNav` → `ChatWidget` → `Hero` → `CareerHighlights` → `Timeline` → `Projects` → `FunProjects` → `Education` → `Contact` → `ConstellationDog` → `HobbiesCarousel` → `RecommendationsCarousel` → `EntertainmentPreview`. Sections hidden via `site_sections` are omitted entirely — this includes `experience` and `education`. Builds `navLabels` and `sectionHeaders` maps from `site_sections`, and `heroTaglines` from `site_config`, and passes them as props to the relevant components.
 
 **Dedicated pages** (`/entertainment`, `/recommendations`, `/hobbies`): fetch all items where `published = true` — includes items not in the carousel. Each page has a server component (`page.tsx`) that queries the DB and passes data to a client component (`*Content.tsx`) for interactivity.
 
@@ -49,9 +69,15 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 
 **Timeline** (`src/components/Timeline.tsx` + `TimelineEntry.tsx`): Renders `RESUME.experience` as an alternating left/right layout using CSS grid (`grid-cols-[1fr_40px_1fr]`). Entrance animations use Framer Motion `whileInView` with `once: true`. Each entry has its own `accent` hex color defined in `resume.ts`; a local `hexToRgb` helper converts it for use in rgba strings.
 
-**SideNav** (`src/components/SideNav.tsx`): Fades in 1.2s after scrolling stops via `useScrollVisibility` hook. Uses a scroll-event listener with `getBoundingClientRect()` to track the active section — picks whichever section has the most overlap with the 10–70% viewport zone. Hidden on mobile (`hidden md:flex`). Dots for sections with no DB data are hidden via `hiddenSectionIds` prop.
+**SideNav** (`src/components/SideNav.tsx`): Fades in 1.2s after scrolling stops via `useScrollVisibility` hook. Uses a scroll-event listener with `getBoundingClientRect()` to track the active section — picks whichever section has the most overlap with the 10–70% viewport zone. Hidden on mobile (`hidden md:flex`). Dots for sections with no DB data are hidden via `hiddenSectionIds` prop. Accepts `navLabels?: Record<string, string>` prop — values override the hardcoded dot labels for each section id.
 
 **ConstellationDog** (`src/components/ConstellationDog.tsx`): Canvas animation that samples non-white pixels from `/goose-constellation.png` (Goose the dog, pre-cut from white background) and renders them as twinkling teal stars with constellation lines. Placed between Contact and HobbiesCarousel on the homepage.
+
+**Section headers**: All nine homepage section components (`CareerHighlights`, `Timeline`, `Projects`, `FunProjects`, `Education`, `Contact`, `HobbiesCarousel`, `RecommendationsCarousel`, `EntertainmentPreview`) accept a `sectionHeader?: string` prop that overrides the hardcoded heading text. The homepage passes values from the `section_header` column in `site_sections`.
+
+**NavMenu** (`src/components/NavMenu.tsx`): Accepts a `links?: { href: string; label: string }[]` prop. If provided (and non-empty), uses those links; otherwise falls back to `DEFAULT_NAV_LINKS` (the hardcoded array). `src/app/layout.tsx` is an async server component that fetches `nav_links` from the DB and passes them as `links` to `<NavMenu />`.
+
+**Hero** (`src/components/Hero.tsx`): Accepts `name`, `heroTitle`, and `taglines: [string, string]` props sourced from `site_config` at the homepage level. Has a CSS 3D tilt effect on the name: mouse hover (or finger drag on mobile) tilts the element using `rotateX`/`rotateY`, with stacked `text-shadow` layers for depth that fade in from zero at rest via a `tiltAmount` scalar. Spring-back on mouse leave / touch end uses a `requestAnimationFrame` lerp (factor 0.83/frame). "Roddini" uses a two-span technique (shadow copy + gradient face) to work around the CSS paint-order issue where `text-shadow` renders on top of `background-clip: text` gradient. Touch drag uses native DOM listeners with `{ passive: false }` on `touchmove` so `e.preventDefault()` blocks page scroll on iOS Safari.
 
 **Carousels** (`CareerHighlights`, `HobbiesCarousel`, `RecommendationsCarousel`, `EntertainmentPreview`): All four use `left: 50% / marginLeft: -CARD_W/2 / top: 50% / marginTop: -CARD_H/2` for absolute card positioning — do NOT use `flex items-center justify-center` on the card container, as Safari mobile does not apply flex alignment to absolutely positioned children correctly.
 

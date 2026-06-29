@@ -90,9 +90,9 @@ export default function PodcastsAdmin() {
         </button>
       </div>
 
-      {showForm && (
+      {showForm && editingId === null && (
         <div className="mb-6 rounded-lg bg-white/5 p-4 flex flex-col gap-3">
-          <h2 className="font-medium">{editingId ? 'Edit Podcast' : 'New Podcast'}</h2>
+          <h2 className="font-medium">New Podcast</h2>
           <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
           <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input" />
@@ -111,7 +111,25 @@ export default function PodcastsAdmin() {
       )}
 
       <div className="flex flex-col gap-2">
-        {podcasts.map((p) => (
+        {podcasts.map((p) => editingId === p.id ? (
+          <div key={p.id} className="rounded-lg bg-white/5 p-4 flex flex-col gap-3">
+            <h2 className="font-medium">Edit Podcast</h2>
+            <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
+            <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
+            <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input" />
+            <select value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })} className="input">
+              {frequencies.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+            <input placeholder="Link URL" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="input" />
+            <input type="number" placeholder="Sort order" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="input" />
+            <div className="flex gap-2">
+              <button onClick={save} disabled={!form.name} className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-sm disabled:opacity-50 transition-colors">Save</button>
+              <button onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">Cancel</button>
+            </div>
+          </div>
+        ) : (
           <div key={p.id} className="rounded-lg bg-white/5 px-4 py-3 flex items-center gap-4">
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{p.name}</p>

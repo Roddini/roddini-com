@@ -15,11 +15,12 @@ import ConstellationDog from '@/components/ConstellationDog'
 import ChatWidget from '@/components/ChatWidget'
 export const dynamic = 'force-dynamic'
 
+import LifeHacksCarousel from '@/components/LifeHacksCarousel'
 import { sql } from '@/lib/db'
-import type { Hobby, Recommendation, Podcast, CareerHighlight, Project, FunProject, LookupValue, SiteSection } from '@/lib/types'
+import type { Hobby, Recommendation, Podcast, CareerHighlight, Project, FunProject, LookupValue, SiteSection, LifeHack } from '@/lib/types'
 
 export default async function Home() {
-  const [hobbies, recommendations, podcasts, careerHighlights, projects, funProjects, siteSections, recCategories, podFrequencies, siteConfigRows] = await Promise.all([
+  const [hobbies, recommendations, podcasts, careerHighlights, projects, funProjects, siteSections, recCategories, podFrequencies, siteConfigRows, lifeHacks] = await Promise.all([
     sql`SELECT * FROM hobbies WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Hobby[],
     sql`SELECT * FROM recommendations WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Recommendation[],
     sql`SELECT * FROM podcasts WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Podcast[],
@@ -30,6 +31,7 @@ export default async function Home() {
     sql`SELECT value, color FROM lookup_values WHERE type = 'recommendation_category'` as unknown as LookupValue[],
     sql`SELECT value, label, color FROM lookup_values WHERE type = 'podcast_frequency' ORDER BY sort_order ASC` as unknown as LookupValue[],
     sql`SELECT key, value FROM site_config` as unknown as { key: string; value: string }[],
+    sql`SELECT * FROM life_hacks WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as LifeHack[],
   ])
 
   const categoryColors = Object.fromEntries(recCategories.map((c) => [c.value, c.color]))
@@ -49,11 +51,14 @@ export default async function Home() {
 
   const hiddenSectionIds = [
     (sections.careerHighlights === false || careerHighlights.length === 0) && 'career-highlights',
+    sections.experience === false && 'experience',
+    sections.education === false && 'education',
     projects.length === 0 && 'projects',
     funProjects.length === 0 && 'fun-projects',
     (sections.hobbies === false || hobbies.length === 0) && 'hobbies',
     (sections.recommendations === false || recommendations.length === 0) && 'recommendations',
     (sections.entertainment === false || podcasts.length === 0) && 'entertainment',
+    (sections.lifeHacks === false || lifeHacks.length === 0) && 'life-hacks',
     sections.contact === false && 'contact',
   ].filter(Boolean) as string[]
 
@@ -79,7 +84,9 @@ export default async function Home() {
             <CareerHighlights items={careerHighlights} sectionHeader={sectionHeaders.careerHighlights} />
           </SectionReveal>
         )}
-        <Timeline sectionHeader={sectionHeaders.experience} />
+        {sections.experience !== false && (
+          <Timeline sectionHeader={sectionHeaders.experience} />
+        )}
         {sections.projects !== false && projects.length > 0 && (
           <SectionReveal>
             <Projects items={projects} sectionHeader={sectionHeaders.projects} />
@@ -90,9 +97,11 @@ export default async function Home() {
             <FunProjects items={funProjects} sectionHeader={sectionHeaders.funProjects} />
           </SectionReveal>
         )}
-        <SectionReveal>
-          <Education sectionHeader={sectionHeaders.education} />
-        </SectionReveal>
+        {sections.education !== false && (
+          <SectionReveal>
+            <Education sectionHeader={sectionHeaders.education} />
+          </SectionReveal>
+        )}
         {sections.contact !== false && (
           <SectionReveal>
             <Contact sectionHeader={sectionHeaders.contact} />
@@ -114,6 +123,11 @@ export default async function Home() {
         {sections.entertainment !== false && podcasts.length > 0 && (
           <SectionReveal>
             <EntertainmentPreview items={podcasts} frequencyOptions={podFrequencies} sectionHeader={sectionHeaders.entertainment} />
+          </SectionReveal>
+        )}
+        {sections.lifeHacks !== false && lifeHacks.length > 0 && (
+          <SectionReveal>
+            <LifeHacksCarousel items={lifeHacks} sectionHeader={sectionHeaders.lifeHacks} />
           </SectionReveal>
         )}
       </div>

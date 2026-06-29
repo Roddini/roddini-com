@@ -242,6 +242,26 @@ async function migrate() {
     ON CONFLICT (key) DO NOTHING
   `
 
+  // Life Hacks section
+  await sql`
+    CREATE TABLE IF NOT EXISTS life_hacks (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      category TEXT,
+      description TEXT,
+      link TEXT,
+      sort_order INTEGER DEFAULT 0,
+      published BOOLEAN DEFAULT true,
+      featured_in_carousel BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+  await sql`
+    INSERT INTO site_sections (section_key, visible, section_header, nav_label)
+    VALUES ('lifeHacks', true, 'Life Hacks', 'Life Hacks')
+    ON CONFLICT (section_key) DO NOTHING
+  `
+
   console.log('Migrations complete.')
 }
 
