@@ -125,7 +125,7 @@ export default function Projects({ items }: { items: Project[] }) {
                     className="text-[10px] tracking-widest uppercase font-light shrink-0"
                     style={{ color: 'rgba(0,212,170,0.5)' }}
                   >
-                    {project.year} · {project.company}
+                    {project.company}
                   </span>
                   <h3 className="text-lg font-light text-white mt-2 mb-3 shrink-0">{project.name}</h3>
                   <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>

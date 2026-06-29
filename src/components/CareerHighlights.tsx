@@ -151,7 +151,7 @@ export default function CareerHighlights({ items }: { items: CareerHighlight[] }
                     className="text-[10px] tracking-widest uppercase font-light mb-3 shrink-0"
                     style={{ color: 'rgba(100,116,139,0.7)' }}
                   >
-                    {item.company} · {item.period}
+                    {item.company}
                   </span>
                   <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>
                     <p
