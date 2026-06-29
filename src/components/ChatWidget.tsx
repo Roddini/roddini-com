@@ -199,7 +199,7 @@ export default function ChatWidget() {
                   className="text-sm font-light tracking-wide"
                   style={{ color: '#00d4aa' }}
                 >
-                  Goose
+                  Goose K9 AI
                 </span>
               </div>
               <button
