@@ -12,6 +12,7 @@ import RecommendationsCarousel from '@/components/RecommendationsCarousel'
 import EntertainmentPreview from '@/components/EntertainmentPreview'
 import Contact from '@/components/Contact'
 import ConstellationDog from '@/components/ConstellationDog'
+import ChatWidget from '@/components/ChatWidget'
 export const dynamic = 'force-dynamic'
 
 import { sql } from '@/lib/db'
@@ -48,6 +49,7 @@ export default async function Home() {
     <main className="relative min-h-screen" style={{ background: '#060a13' }}>
       <StarField />
       <SideNav hiddenSectionIds={hiddenSectionIds} />
+      <ChatWidget />
 
       <div className="relative" style={{ zIndex: 1 }}>
         <Hero />

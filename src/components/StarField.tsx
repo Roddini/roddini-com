@@ -98,7 +98,7 @@ export default function StarField() {
     }
     setup()
 
-    const onScroll = () => { scrollYRef.current = window.scrollY }
+    const onScroll = () => { scrollYRef.current = Math.max(0, window.scrollY) }
     const onResize = () => setup()
 
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -198,7 +198,7 @@ export default function StarField() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none' }}
+      style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none', transform: 'translateZ(0)', willChange: 'transform' }}
     />
   )
 }

@@ -88,12 +88,16 @@ export default function HobbiesCarousel({ items }: { items: Hobby[] }) {
             pausedRef.current = false
           }}
         >
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-0 pointer-events-none">
             {virtualCards.map(({ virtualIdx, offset, item }) => (
               <motion.div
                 key={virtualIdx}
                 className="absolute"
                 style={{
+                  left: '50%',
+                  top: '50%',
+                  marginLeft: -(CARD_W / 2),
+                  marginTop: -110,
                   pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
                   cursor: offset !== 0 ? 'pointer' : 'default',
                 }}

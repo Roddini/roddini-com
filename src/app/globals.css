@@ -15,6 +15,7 @@
 html {
   scroll-behavior: smooth;
   background: var(--bg);
+  overscroll-behavior: none;
 }
 
 body {
@@ -23,6 +24,7 @@ body {
   font-family: var(--font-geist-sans, system-ui, sans-serif);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 /* Slim teal scrollbar */
@@ -61,4 +63,13 @@ body {
 }
 .input option {
   background: #1a1f2e;
+}
+
+/* Hide scrollbar while keeping scroll behavior (used in chat chips row) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

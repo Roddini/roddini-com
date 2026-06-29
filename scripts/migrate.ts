@@ -155,6 +155,28 @@ async function migrate() {
     ON CONFLICT (type, value) DO NOTHING
   `
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS chat_sessions (
+      ip TEXT PRIMARY KEY,
+      tokens_used INT DEFAULT 0,
+      approved BOOLEAN DEFAULT FALSE,
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS chat_access_requests (
+      id SERIAL PRIMARY KEY,
+      ip TEXT NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      company TEXT,
+      reason TEXT NOT NULL,
+      approved BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
   // Remove hardcoded CHECK constraints so any value is allowed
   await sql`ALTER TABLE recommendations DROP CONSTRAINT IF EXISTS recommendations_category_check`
   await sql`ALTER TABLE podcasts DROP CONSTRAINT IF EXISTS podcasts_frequency_check`

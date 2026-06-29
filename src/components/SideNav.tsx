@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useScrollVisibility } from '@/hooks/useScrollVisibility'
 
 const SECTIONS = [
   { id: 'hero', label: 'Intro' },
@@ -18,33 +19,8 @@ const SECTIONS = [
 
 export default function SideNav({ hiddenSectionIds = [] }: { hiddenSectionIds?: string[] }) {
   const sections = SECTIONS.filter((s) => !hiddenSectionIds.includes(s.id))
-  const [visible, setVisible] = useState(false)
+  const visible = useScrollVisibility()
   const [active, setActive] = useState('hero')
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isScrollingRef = useRef(false)
-
-  // Fade in after scroll stops
-  useEffect(() => {
-    const onScroll = () => {
-      isScrollingRef.current = true
-      setVisible(false)
-      if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(() => {
-        isScrollingRef.current = false
-        setVisible(true)
-      }, 1200)
-    }
-
-    // Show on initial load (not scrolled)
-    const initialTimer = setTimeout(() => setVisible(true), 1800)
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      if (timerRef.current) clearTimeout(timerRef.current)
-      clearTimeout(initialTimer)
-    }
-  }, [])
 
   // Track active section via scroll position
   useEffect(() => {
