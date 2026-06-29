@@ -12,6 +12,7 @@ const links = [
   { href: '/admin/recommendations', label: 'Recommendations' },
   { href: '/admin/hobbies', label: 'Hobbies' },
   { href: '/admin/categories', label: 'Categories' },
+  { href: '/admin/chat', label: 'Chat Access' },
 ]
 
 export default function AdminNav() {

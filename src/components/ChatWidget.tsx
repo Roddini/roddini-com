@@ -17,6 +17,31 @@ const THINKING_PHRASE =
 
 const FALLBACK_DISCLOSURE = "Goose is an AI assistant."
 
+function linkify(text: string) {
+  const parts = text.split(/(\[[^\]]+\]\(https?:\/\/[^)]+\)|https?:\/\/[^\s]+)/g)
+  return parts.map((part, i) => {
+    const mdMatch = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/)
+    const bareUrl = !mdMatch && part.match(/^https?:\/\//)
+    if (!mdMatch && !bareUrl) return part
+    const href = mdMatch ? mdMatch[2] : part
+    const label = mdMatch ? `${mdMatch[1]} →` : 'View →'
+    return (
+      <a
+        key={i}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline underline-offset-2 transition-opacity duration-150"
+        style={{ color: '#00d4aa' }}
+        onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = '0.7')}
+        onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+      >
+        {label}
+      </a>
+    )
+  })
+}
+
 export default function ChatWidget() {
   const visible = useScrollVisibility()
   const [open, setOpen] = useState(false)
@@ -88,6 +113,16 @@ export default function ChatWidget() {
         return
       }
 
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Something went wrong' }))
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: err.error ?? 'Something went wrong. Try again.' },
+        ])
+        setStreaming(false)
+        return
+      }
+
       const reader = res.body!.getReader()
       const decoder = new TextDecoder()
       let accumulated = ''
@@ -116,8 +151,8 @@ export default function ChatWidget() {
   }
 
   async function submitAccessRequest() {
-    const { name, email, reason } = accessForm
-    if (!name || !email || !reason) return
+    const { name, email } = accessForm
+    if (!name || !email) return
     await fetch('/api/chat/request-access', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -146,7 +181,7 @@ export default function ChatWidget() {
             className="flex flex-col rounded-2xl overflow-hidden shadow-2xl"
             style={{
               width: 'min(440px, calc(100vw - 1.5rem))',
-              height: 'min(580px, 85vh)',
+              height: 'min(580px, calc(100dvh - 120px))',
               background: 'rgba(6,10,19,0.96)',
               border: '1px solid rgba(0,212,170,0.18)',
               backdropFilter: 'blur(16px)',
@@ -231,9 +266,12 @@ export default function ChatWidget() {
                             }
                       }
                     >
-                      {m.content || (
-                        <span style={{ color: 'rgba(0,212,170,0.5)' }}>▋</span>
-                      )}
+                      {m.content
+                        ? m.role === 'assistant'
+                          ? linkify(m.content)
+                          : m.content
+                        : <span style={{ color: 'rgba(0,212,170,0.5)' }}>▋</span>
+                      }
                     </div>
                   )}
                 </div>
@@ -295,7 +333,7 @@ export default function ChatWidget() {
                         { key: 'name', placeholder: 'Name *' },
                         { key: 'email', placeholder: 'Email *' },
                         { key: 'company', placeholder: 'Company (optional)' },
-                        { key: 'reason', placeholder: 'Why do you need more? *' },
+                        { key: 'reason', placeholder: 'Want to leave a note for Andrew? (optional)' },
                       ].map(({ key, placeholder }) => (
                         <input
                           key={key}

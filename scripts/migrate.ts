@@ -177,6 +177,11 @@ async function migrate() {
     )
   `
 
+  await sql`
+    ALTER TABLE chat_sessions
+    ADD COLUMN IF NOT EXISTS token_limit_override INT DEFAULT NULL
+  `
+
   // Remove hardcoded CHECK constraints so any value is allowed
   await sql`ALTER TABLE recommendations DROP CONSTRAINT IF EXISTS recommendations_category_check`
   await sql`ALTER TABLE podcasts DROP CONSTRAINT IF EXISTS podcasts_frequency_check`
