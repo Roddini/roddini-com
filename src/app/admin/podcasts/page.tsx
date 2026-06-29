@@ -84,7 +84,7 @@ export default function PodcastsAdmin() {
     <>
       <AdminNav />
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Podcasts</h1>
+        <h1 className="text-2xl font-semibold">Entertainment</h1>
         <button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(true) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">
           + Add
         </button>
@@ -92,7 +92,7 @@ export default function PodcastsAdmin() {
 
       {showForm && editingId === null && (
         <div className="mb-6 rounded-lg bg-white/5 p-4 flex flex-col gap-3">
-          <h2 className="font-medium">New Podcast</h2>
+          <h2 className="font-medium">New Entertainment</h2>
           <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
           <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input" />
@@ -113,7 +113,7 @@ export default function PodcastsAdmin() {
       <div className="flex flex-col gap-2">
         {podcasts.map((p) => editingId === p.id ? (
           <div key={p.id} className="rounded-lg bg-white/5 p-4 flex flex-col gap-3">
-            <h2 className="font-medium">Edit Podcast</h2>
+            <h2 className="font-medium">Edit Entertainment</h2>
             <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
             <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
             <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input" />

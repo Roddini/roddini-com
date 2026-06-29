@@ -8,7 +8,7 @@ const links = [
   { href: '/admin/projects', label: 'Projects' },
   { href: '/admin/fun-projects', label: 'Fun Projects' },
   { href: '/admin/career-highlights', label: 'Career Highlights' },
-  { href: '/admin/podcasts', label: 'Podcasts' },
+  { href: '/admin/podcasts', label: 'Entertainment' },
   { href: '/admin/recommendations', label: 'Recommendations' },
   { href: '/admin/hobbies', label: 'Hobbies' },
   { href: '/admin/categories', label: 'Categories' },
