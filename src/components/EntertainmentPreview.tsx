@@ -144,22 +144,26 @@ export default function EntertainmentPreview({
                     }}
                   >
                     <div className="flex items-center gap-2 mb-3 shrink-0">
-                      <span
-                        className="text-[9px] tracking-widest uppercase px-2 py-0.5 rounded-full"
-                        style={{
-                          color: freqColor,
-                          background: `${freqColor}15`,
-                          border: `1px solid ${freqColor}30`,
-                        }}
-                      >
-                        {getFreqLabel(item.frequency)}
-                      </span>
-                      <span
-                        className="text-[9px] tracking-widest uppercase"
-                        style={{ color: 'rgba(100,116,139,0.6)' }}
-                      >
-                        {item.category}
-                      </span>
+                      {item.category && (
+                        <span
+                          className="text-[9px] tracking-widest uppercase px-2 py-0.5 rounded-full"
+                          style={{
+                            color: FALLBACK_COLOR,
+                            background: `${FALLBACK_COLOR}15`,
+                            border: `1px solid ${FALLBACK_COLOR}30`,
+                          }}
+                        >
+                          {item.category}
+                        </span>
+                      )}
+                      {item.frequency && (
+                        <span
+                          className="text-[9px] tracking-widest uppercase"
+                          style={{ color: 'rgba(100,116,139,0.6)' }}
+                        >
+                          {getFreqLabel(item.frequency)}
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-lg font-light text-white mb-3 shrink-0">{item.name}</h3>
                     <div className={`flex-1 ${offset === 0 && centerHovered ? 'overflow-auto' : 'overflow-hidden'}`}>

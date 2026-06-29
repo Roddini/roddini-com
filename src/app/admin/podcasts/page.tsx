@@ -97,6 +97,7 @@ export default function PodcastsAdmin() {
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
           <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input" />
           <select value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })} className="input">
+            <option value="">[blank]</option>
             {frequencies.map((f) => (
               <option key={f.value} value={f.value}>{f.label}</option>
             ))}
@@ -118,6 +119,7 @@ export default function PodcastsAdmin() {
             <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
             <input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input" />
             <select value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })} className="input">
+              <option value="">[blank]</option>
               {frequencies.map((f) => (
                 <option key={f.value} value={f.value}>{f.label}</option>
               ))}
