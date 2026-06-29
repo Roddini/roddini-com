@@ -8,7 +8,7 @@ export const RESUME = {
     linkedin: 'linkedin.com/in/roddini',
   },
   summary:
-    'Talent and People leader who builds recruiting and HR functions from zero and scales them through hypergrowth. Hired pre-launch at Varo to stand up talent acquisition for a Series A startup and grew it past 700 employees, twice stepping in as Interim Chief People Officer across leadership transitions. Track record spans full-cycle and executive recruiting, compensation and job architecture, HR operations, and the regulatory and board-facing rigor of taking a fintech to a national bank charter. Equally comfortable hiring machine learning and engineering talent in competitive markets and partnering with founders on org design, change management, and the systems a company needs to grow.',
+    'People and Talent executive who builds the teams, structures, and processes that enable organizations to scale. Experienced across executive recruiting, organizational design, compensation, workforce planning, people operations, leadership coaching, and change management, with a track record of partnering closely with founders and executive teams through periods of rapid growth and transformation. Combines hands-on operational leadership with a strategic business perspective, helping companies attract exceptional talent, develop leaders, and create the infrastructure needed for sustainable growth. Scaled organizations from the teens to more than 700 employees, including building Varo\'s talent function from the ground up and serving twice as Interim Chief People Officer during critical leadership transitions.',
 
   careerHighlights: [
     {
@@ -134,7 +134,7 @@ export const RESUME = {
       highlights: [
         'Hired pre-product-launch to build the talent function from the ground up for a Series A startup, scaling the company from 20 to 700+ employees across three offices and twice stepping in as Interim Chief People Officer during executive leadership transitions.',
         'Built recruiting processes that scaled with the company while holding a high bar for candidate experience—sustaining an 80%+ offer-acceptance rate and meeting 100% of quarterly hiring objectives.',
-        'Owned compensation strategy and job architecture, benchmarking against market data to build competitive, retention-focused packages; presented comp philosophy and special cases (e.g., retention bonuses) to the board\'s compensation committee and partnered with the General Counsel on equity administration.',
+        'Owned compensation strategy and job architecture, benchmarking against market data to build competitive, retention-focused packages; presented comp philosophy and special cases (e.g., retention programs) to the board\'s compensation committee and partnered with the General Counsel on equity administration.',
         'Led people analytics for the executive team, building recruiting and HR reporting that surfaced actionable insights and informed process improvements, planning, and forecasting.',
         'Partnered with FP&A on headcount planning, building models to monitor and forecast the burn rate of labor costs against $1B in funding.',
         'Brought customer support in-house from an outsourced model, scaling the Salt Lake City operations center from <10 to 300+ FTE—delivering $2M in savings in the first 12 months, a 75% productivity gain per headcount, and a 40-point NPS lift to +80 (top 1% of U.S. banks).',
@@ -145,7 +145,7 @@ export const RESUME = {
         'Co-authored the people documentation for Varo\'s national bank charter, as a member of senior leadership preparing materials for the FDIC and OCC that detailed hiring processes, documentation standards, and a compensation philosophy emphasizing fairness and regulatory compliance—contributing to Varo becoming the first fintech to obtain a national bank charter.',
         'Removed credit checks from the hiring process to reduce bias—a pioneering move for a fintech operating under active regulatory scrutiny.',
         'Expanded diversity, equity, and inclusion (DEI) hiring by building relationships with organizations that broadened access to candidates from underrepresented groups.',
-        'Built the employer and talent brand, maintaining content and assets across Crunchbase, Glassdoor, LinkedIn, Stack Overflow, and AngelList; launched standout programs including employee-composed original hold music for customer service calls, a curated company SWAG line, and a SoundCloud playlist of the original recordings.',
+        'Built the employer and talent brand, maintaining content and assets across Crunchbase, Glassdoor, LinkedIn, Stack Overflow, and AngelList; launched standout programs including original hold music for customer service calls created by employees and a curated company SWAG line.',
         'Designed interviewer training and bias-mitigation programs, including resource kits and structured techniques to raise interview quality and consistency.',
         'Designed and ran executive and management offsites—handling logistics, moderation, and building agendas that drove ideas on corporate and product strategy, team engagement, and company values.',
         'Built the onboarding program and continuously refined it to give new hires a seamless first experience.',
