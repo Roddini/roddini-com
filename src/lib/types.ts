@@ -87,6 +87,32 @@ export type NavLink = {
 
 export type SiteConfig = Record<string, string>
 
+export type ChatConversation = {
+  id: string
+  visitor_id: string | null
+  ip: string | null
+  country: string | null
+  city: string | null
+  message_count: number
+  tokens_used: number
+  started_at: string
+  updated_at: string
+}
+
+export type ChatMessage = {
+  id: number
+  conversation_id: string
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
+}
+
+// Admin list row: a conversation plus whether that IP submitted an access request
+export type ChatConversationSummary = ChatConversation & {
+  request_name: string | null
+  request_email: string | null
+}
+
 export type LifeHack = {
   id: number
   name: string

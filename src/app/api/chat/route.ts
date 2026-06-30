@@ -29,7 +29,9 @@ function getIp(req: NextRequest): string {
 export async function POST(req: NextRequest) {
   try {
     const ip = getIp(req)
-    const { messages } = await req.json()
+    const { messages, conversationId, visitorId } = await req.json()
+    const country = req.headers.get('x-vercel-ip-country')
+    const city = req.headers.get('x-vercel-ip-city')
 
     // Check token usage
     const rows = await sql`
@@ -42,6 +44,22 @@ export async function POST(req: NextRequest) {
       : TOKEN_LIMIT
     if (session && session.tokens_used >= effectiveLimit) {
       return NextResponse.json({ limitReached: true }, { status: 402 })
+    }
+
+    // Log the conversation + the incoming user message (best-effort)
+    if (conversationId) {
+      await sql`
+        INSERT INTO chat_conversations (id, visitor_id, ip, country, city)
+        VALUES (${conversationId}, ${visitorId ?? null}, ${ip}, ${country}, ${city})
+        ON CONFLICT (id) DO UPDATE SET updated_at = NOW()
+      `
+      const lastUser = messages[messages.length - 1]
+      if (lastUser?.role === 'user') {
+        await sql`
+          INSERT INTO chat_messages (conversation_id, role, content)
+          VALUES (${conversationId}, 'user', ${lastUser.content})
+        `
+      }
     }
 
     const context = getContext()
@@ -60,10 +78,12 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         let inputTokens = 0
         let outputTokens = 0
+        let assistantText = ''
 
         try {
           for await (const event of stream) {
             if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              assistantText += event.delta.text
               controller.enqueue(encoder.encode(event.delta.text))
             }
             if (event.type === 'message_delta' && event.usage) {
@@ -82,6 +102,23 @@ export async function POST(req: NextRequest) {
               SET tokens_used = chat_sessions.tokens_used + ${tokensUsed},
                   updated_at = NOW()
           `
+
+          // Persist the assistant reply + roll up conversation counts
+          if (conversationId) {
+            if (assistantText) {
+              await sql`
+                INSERT INTO chat_messages (conversation_id, role, content)
+                VALUES (${conversationId}, 'assistant', ${assistantText})
+              `
+            }
+            await sql`
+              UPDATE chat_conversations
+              SET message_count = message_count + 2,
+                  tokens_used = tokens_used + ${tokensUsed},
+                  updated_at = NOW()
+              WHERE id = ${conversationId}
+            `
+          }
         } catch (streamErr) {
           controller.enqueue(encoder.encode(`Error: ${(streamErr as Error).message}`))
         }
