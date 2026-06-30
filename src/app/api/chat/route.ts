@@ -46,19 +46,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ limitReached: true }, { status: 402 })
     }
 
-    // Log the conversation + the incoming user message (best-effort)
+    // Log the conversation + the incoming user message.
+    // Best-effort: a logging failure must never break the visitor's chat.
     if (conversationId) {
-      await sql`
-        INSERT INTO chat_conversations (id, visitor_id, ip, country, city)
-        VALUES (${conversationId}, ${visitorId ?? null}, ${ip}, ${country}, ${city})
-        ON CONFLICT (id) DO UPDATE SET updated_at = NOW()
-      `
-      const lastUser = messages[messages.length - 1]
-      if (lastUser?.role === 'user') {
+      try {
         await sql`
-          INSERT INTO chat_messages (conversation_id, role, content)
-          VALUES (${conversationId}, 'user', ${lastUser.content})
+          INSERT INTO chat_conversations (id, visitor_id, ip, country, city)
+          VALUES (${conversationId}, ${visitorId ?? null}, ${ip}, ${country}, ${city})
+          ON CONFLICT (id) DO UPDATE SET updated_at = NOW()
         `
+        const lastUser = messages[messages.length - 1]
+        if (lastUser?.role === 'user') {
+          await sql`
+            INSERT INTO chat_messages (conversation_id, role, content)
+            VALUES (${conversationId}, 'user', ${lastUser.content})
+          `
+        }
+      } catch (logErr) {
+        console.error('chat conversation logging failed:', logErr)
       }
     }
 
@@ -103,21 +108,26 @@ export async function POST(req: NextRequest) {
                   updated_at = NOW()
           `
 
-          // Persist the assistant reply + roll up conversation counts
+          // Persist the assistant reply + roll up conversation counts.
+          // Best-effort: the reply is already streamed, so logging must not throw here.
           if (conversationId) {
-            if (assistantText) {
+            try {
+              if (assistantText) {
+                await sql`
+                  INSERT INTO chat_messages (conversation_id, role, content)
+                  VALUES (${conversationId}, 'assistant', ${assistantText})
+                `
+              }
               await sql`
-                INSERT INTO chat_messages (conversation_id, role, content)
-                VALUES (${conversationId}, 'assistant', ${assistantText})
+                UPDATE chat_conversations
+                SET message_count = message_count + 2,
+                    tokens_used = tokens_used + ${tokensUsed},
+                    updated_at = NOW()
+                WHERE id = ${conversationId}
               `
+            } catch (logErr) {
+              console.error('chat conversation logging failed:', logErr)
             }
-            await sql`
-              UPDATE chat_conversations
-              SET message_count = message_count + 2,
-                  tokens_used = tokens_used + ${tokensUsed},
-                  updated_at = NOW()
-              WHERE id = ${conversationId}
-            `
           }
         } catch (streamErr) {
           controller.enqueue(encoder.encode(`Error: ${(streamErr as Error).message}`))
