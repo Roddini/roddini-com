@@ -196,10 +196,10 @@ export default function ChatWidget() {
               <div className="flex items-center gap-2.5">
                 <GooseIcon size={28} />
                 <span
-                  className="text-sm font-light tracking-wide"
-                  style={{ color: '#00d4aa' }}
+                  className="font-light tracking-wide"
+                  style={{ color: '#00d4aa', fontSize: '0.875rem' }}
                 >
-                  Goose K9 AI
+                  Goose <span style={{ fontSize: '0.8rem' }}>K9.AI</span>
                 </span>
               </div>
               <button
