@@ -25,22 +25,26 @@ There are **two** content sources — don't confuse them:
 - **`src/data/resume.ts`** — static source of truth for resume content (experience, projects, education). Edit this file directly to change that content.
 - **Neon database** — source of truth for dynamic content: podcasts, recommendations, hobbies, career highlights, and section visibility toggles. Managed via `/admin`. Connection via `DATABASE_URL` env var in `.env.local`.
 
-`src/lib/types.ts` defines the TypeScript types for all DB-backed content (`Podcast`, `Recommendation`, `Hobby`, `CareerHighlight`, `SiteSection`, `NavLink`, `SiteConfig`). The files in `src/data/entertainment.ts`, `src/data/hobbies.ts`, and `src/data/recommendations.ts` are legacy stubs — the live pages do not use them.
+`src/lib/types.ts` defines the TypeScript types for all DB-backed content (`Podcast`, `Recommendation`, `Hobby`, `CareerHighlight`, `SiteSection`, `NavLink`, `SiteConfig`, `ChatConversation`, `ChatMessage`, `ChatConversationSummary`). The files in `src/data/entertainment.ts`, `src/data/hobbies.ts`, and `src/data/recommendations.ts` are legacy stubs — the live pages do not use them.
 
 ### Database
 
 `src/lib/db.ts` exports a `sql` tagged-template function via `@neondatabase/serverless`. Pages query it directly in server components — no ORM, no abstraction layer. Cast results with `as unknown as Type[]` since Neon returns `Record<string, any>[]`.
 
-Tables: `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `site_sections`, `chat_sessions`, `chat_access_requests`, `nav_links`, `site_config`.
+Tables: `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `site_sections`, `chat_sessions`, `chat_access_requests`, `chat_conversations`, `chat_messages`, `nav_links`, `site_config`.
 
 - Each content table has `published` (show anywhere) and `featured_in_carousel` (show on homepage carousel).
+- `chat_conversations` — one row per chat widget session: `id` (client-generated UUID), `visitor_id` (persistent localStorage id), `ip`, `country`/`city` (from Vercel geo headers, null locally), `message_count`, `tokens_used`, `started_at`, `updated_at`.
+- `chat_messages` — `conversation_id` (FK → `chat_conversations`, `ON DELETE CASCADE`), `role` (`user`/`assistant`), `content`, `created_at`. Index on `conversation_id`.
+
+**`scripts/migrate.ts` is idempotent — safe to re-run anytime.** Schema statements use `CREATE/ALTER ... IF NOT EXISTS`, seed inserts use `ON CONFLICT DO NOTHING`, and the `site_sections` label seed `UPDATE`s are guarded by `WHERE ... section_header IS NULL` so they never overwrite admin-customized headers/labels.
 - `site_sections` has one row per section with: `section_key` (string), `visible` (boolean), `section_header` (text — overrides the hardcoded heading in the component), `nav_label` (text — overrides the SideNav dot label). Keys: `hero`, `careerHighlights`, `experience`, `education`, `projects`, `funProjects`, `hobbies`, `recommendations`, `entertainment`, `contact`.
 - `nav_links` — rows with `id`, `href`, `label`, `sort_order`. Controls the hamburger menu. Managed at `/admin/nav-links`.
 - `site_config` — key/value table. Current keys: `hero_name`, `hero_title`, `hero_tagline_1`, `hero_tagline_2`. Managed at `/admin/hero`.
 
 ### Admin CMS
 
-Password-protected at `/admin/*` via `src/proxy.ts` (Next.js 16 proxy convention — export named `proxy`, not `middleware`). Session stored as `admin_session` cookie checked against `ADMIN_SECRET` env var. Login API at `/api/admin/login` checks against `ADMIN_PASSWORD` env var.
+Password-protected via `src/proxy.ts` (Next.js 16 proxy convention — export named `proxy`, not `middleware`). The matcher covers **both** `/admin/:path*` (pages) and `/api/admin/:path*` (API). Session stored as `admin_session` cookie checked against `ADMIN_SECRET` env var. Unauthenticated **page** requests redirect to `/admin/login`; unauthenticated **API** requests get a `401` JSON. `/admin/login` and `/api/admin/login` are exempt. Login API at `/api/admin/login` checks against `ADMIN_PASSWORD` env var.
 
 Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/api/admin/[type]/route.ts` (GET + POST) and `src/app/api/admin/[type]/[id]/route.ts` (PATCH + DELETE).
 
@@ -48,6 +52,7 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 - `/admin` (dashboard) — toggle visibility + edit `section_header` / `nav_label` for all homepage sections, including `experience` and `education`. All sections are fully toggleable. Fields auto-save 600ms after typing stops.
 - `/admin/hero` — edit `hero_name`, `hero_title`, `hero_tagline_1`, `hero_tagline_2` via `site_config`. Auto-saves 600ms after typing.
 - `/admin/nav-links` — full CRUD for hamburger menu links (`nav_links` table). "Add Link" pre-populates `sort_order` as `max(existing) + 1`.
+- `/admin/conversations` — read-only viewer for logged Goose chat conversations. Master/detail: filterable list (keyword + date range) on the left, full transcript on the right. Per-conversation delete (cascades to messages), and an "access request" badge when the visitor's IP also submitted the token-limit form.
 
 **Admin API routes (beyond the standard CRUD pattern):**
 - `GET /api/admin/site-sections` — returns all `site_sections` rows including `section_header` and `nav_label`
@@ -58,6 +63,9 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 - `POST /api/admin/nav-links` — inserts a new link
 - `PATCH /api/admin/nav-links/[id]` — partial update (COALESCE)
 - `DELETE /api/admin/nav-links/[id]`
+- `GET /api/admin/conversations?q=&from=&to=` — lists conversations (newest first), `LEFT JOIN` to any access request from the same IP; `q` keyword-matches message content, `from`/`to` bound `started_at`
+- `GET /api/admin/conversations/[id]` — one conversation + its messages in order
+- `DELETE /api/admin/conversations/[id]` — deletes the conversation (messages cascade)
 
 ### Page composition
 
@@ -86,19 +94,32 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 A floating chat widget in the bottom-left corner powered by Claude Haiku. The bot persona is named Goose (after Andrew's dog).
 
 **Files:**
-- `src/components/ChatWidget.tsx` — client component, fixed bottom-left, fades in/out with `useScrollVisibility`. Opens a panel with streaming chat, clickable question chips, and a token-limit access request form. Clicking outside the panel closes it.
+- `src/components/ChatWidget.tsx` — client component, fixed bottom-left, fades in/out with `useScrollVisibility`. Opens a panel with streaming chat, clickable question chips, and a token-limit access request form. Clicking outside the panel closes it. On mount it generates a per-session `conversationId` (`crypto.randomUUID()`) and reads/creates a persistent `visitorId` in `localStorage`; both are sent in every `/api/chat` POST so conversations can be logged.
 - `src/components/GooseIcon.tsx` — small canvas constellation of Goose's face (cropped from `/goose-constellation.png`), used as the chat button icon.
 - `src/hooks/useScrollVisibility.ts` — shared hook used by both `SideNav` and `ChatWidget`. Fades in after 1800ms initial delay; hides on scroll, re-shows 1200ms after scroll stops.
-- `content/chatbot-context.md` — **the only file to edit** to change what Goose knows or says. Contains AI instructions, tone, persona, experience, hobbies, sample Q&A (also drives clickable chips), and AI disclosure text. Read at runtime by the API route — save the file a blank drop-down looks good. I provided the wrong directions. Go back to the same pill color and style as before. I want the pill color, and I want the Genre to be in that gray font. I also want to go back to the podcast name. nd send a new message to pick up changes in dev. In production, requires a redeploy.
+- `content/chatbot-context.md` — **the only file to edit** to change what Goose knows or says. Contains AI instructions, tone, persona, experience, hobbies, sample Q&A (also drives clickable chips), and AI disclosure text. Read at runtime by the API route — save the file and send a new message to pick up changes in dev. In production, requires a redeploy.
 
 **API routes:**
-- `POST /api/chat` — streams a response from Claude Haiku. Reads `content/chatbot-context.md` as the system prompt. Tracks token usage per IP in the `chat_sessions` DB table. Returns HTTP 402 when IP exceeds `CHAT_TOKEN_LIMIT` (default 6,000) and is not approved.
+- `POST /api/chat` — streams a response from Claude Haiku. Reads `content/chatbot-context.md` as the system prompt. Tracks token usage per IP in the `chat_sessions` DB table. Returns HTTP 402 when IP exceeds `CHAT_TOKEN_LIMIT` (default 6,000) and is not approved. Also **logs the conversation**: upserts `chat_conversations` (with IP + Vercel geo headers) and inserts the user message before streaming, then inserts the assistant message and rolls up `message_count`/`tokens_used` after. All logging is **best-effort** — wrapped in try/catch so a DB failure can never break the chat response.
 - `GET /api/chat/questions` — parses `Q:` lines from `## Sample Q&A` section of the MD and returns them as chip button labels. Also returns the `## AI Disclosure` text.
 - `POST /api/chat/request-access` — saves name/email/company/reason to `chat_access_requests` table when a user hits the token limit.
 
 **Token limit:** tracked per IP in `chat_sessions`. To approve a user for unlimited access, set `chat_sessions.approved = TRUE` for their IP.
 
 **Thinking phrase:** "Whatever your expectations are for what's about to happen, lower them. This is some dude's glorified resume website." — shown as italic teal text before the first response, stays on screen above it permanently. Hardcoded in `ChatWidget.tsx` as `THINKING_PHRASE`.
+
+### Daily conversation digest
+
+`src/app/api/cron/digest/route.ts` (`GET`) — emails a summary of `chat_conversations` started in the last 24h, run daily by **Vercel Cron** (configured in `vercel.json`, schedule `0 15 * * *` = 8am Pacific). Gated by `CRON_SECRET`: Vercel automatically sends `Authorization: Bearer ${CRON_SECRET}` when the env var is set, and the route rejects anything else with `401`. Queries the DB server-side via `sql`, emails via Resend (`onboarding@resend.dev` → `aroddini@gmail.com`, matching `request-access`). Sends **nothing** on days with no new conversations. Append `?dry=1` (still authenticated) to preview the email body without sending.
+
+## Environments — Neon branches
+
+Local dev and production use **separate Neon branches of the same project**, so local work never touches live data:
+
+- **Production** = the `main`/`production` branch (endpoint `ep-autumn-boat`). Its connection string is set as `DATABASE_URL` in the **Vercel dashboard** — never in the repo.
+- **Local dev** = the `dev` branch (endpoint `ep-dawn-mode`). Its connection string is the single active `DATABASE_URL` in `.env.local`. The prod string is kept commented in `.env.local` for occasional deliberate prod migrations only.
+
+Refresh the dev branch with current prod data via Neon's **Reset from parent**; afterward re-run `npx tsx scripts/migrate.ts` (idempotent) to restore schema. Schema changes flow code → dev → prod (run the migration against each); data flows prod → dev (branch reset). Local data edits stay local.
 
 ## Tailwind
 
@@ -111,15 +132,19 @@ Version 12 is installed. Cubic-bezier ease arrays must be typed as `[number, num
 ## Required env vars
 
 ```
-DATABASE_URL=         # Neon connection string
+DATABASE_URL=         # Neon connection string (dev branch locally, main branch in Vercel)
 ADMIN_PASSWORD=       # password for /admin/login
 ADMIN_SECRET=         # used to sign the admin_session cookie
 ANTHROPIC_API_KEY=    # Claude API key for the Goose chatbot
 CHAT_TOKEN_LIMIT=     # optional, defaults to 6000 tokens per IP
+RESEND_API_KEY=       # Resend API key — chat access-request + daily digest emails
+CRON_SECRET=          # auth for /api/cron/* — Vercel sends it as a Bearer token to cron jobs
 ```
 
 ## Deployment
 
-Vercel (Next.js auto-detected). Push to GitHub; Vercel deploys on merge to main. All env vars must also be set in the Vercel dashboard.
+Vercel (Next.js auto-detected). Push to GitHub; Vercel deploys on merge to main. All env vars must also be set in the Vercel dashboard — note adding/changing an env var only takes effect on the **next** deployment, not existing ones. Vercel Cron jobs (`vercel.json`) run only against production deployments.
 
 `content/chatbot-context.md` is read from the filesystem at runtime — it is bundled at build time on Vercel, so editing it requires a redeploy to take effect in production.
+
+`.claude/settings.local.json` is gitignored (machine-local Claude Code permissions); the shared `.claude/settings.json` is committed.
