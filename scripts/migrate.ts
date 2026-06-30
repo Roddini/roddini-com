@@ -182,6 +182,33 @@ async function migrate() {
     ADD COLUMN IF NOT EXISTS token_limit_override INT DEFAULT NULL
   `
 
+  // Conversation logging — one row per widget session, with its messages
+  await sql`
+    CREATE TABLE IF NOT EXISTS chat_conversations (
+      id            TEXT PRIMARY KEY,
+      visitor_id    TEXT,
+      ip            TEXT,
+      country       TEXT,
+      city          TEXT,
+      message_count INT DEFAULT 0,
+      tokens_used   INT DEFAULT 0,
+      started_at    TIMESTAMPTZ DEFAULT NOW(),
+      updated_at    TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id              SERIAL PRIMARY KEY,
+      conversation_id TEXT NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
+      role            TEXT NOT NULL,
+      content         TEXT NOT NULL,
+      created_at      TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_chat_messages_conv ON chat_messages(conversation_id)`
+
   // Remove hardcoded CHECK constraints so any value is allowed
   await sql`ALTER TABLE recommendations DROP CONSTRAINT IF EXISTS recommendations_category_check`
   await sql`ALTER TABLE podcasts DROP CONSTRAINT IF EXISTS podcasts_frequency_check`

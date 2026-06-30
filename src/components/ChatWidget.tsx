@@ -56,6 +56,19 @@ export default function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const firstMessageSent = useRef(false)
+  // Fresh conversation id per widget mount (= one conversation per session)
+  const conversationId = useRef<string>(crypto.randomUUID())
+  // Persistent anonymous visitor id, reused across reloads
+  const visitorId = useRef<string>('')
+
+  useEffect(() => {
+    let stored = localStorage.getItem('goose_visitor_id')
+    if (!stored) {
+      stored = crypto.randomUUID()
+      localStorage.setItem('goose_visitor_id', stored)
+    }
+    visitorId.current = stored
+  }, [])
 
   useEffect(() => {
     fetch('/api/chat/questions')
@@ -104,7 +117,11 @@ export default function ChatWidget() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({
+          messages: history,
+          conversationId: conversationId.current,
+          visitorId: visitorId.current,
+        }),
       })
 
       if (res.status === 402) {
