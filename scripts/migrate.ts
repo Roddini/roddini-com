@@ -102,17 +102,17 @@ async function migrate() {
   `
 
   await sql`
-    INSERT INTO site_sections (section_key, visible) VALUES
-      ('projects', true),
-      ('funProjects', true)
-    ON CONFLICT (section_key) DO NOTHING
-  `
-
-  await sql`
     CREATE TABLE IF NOT EXISTS site_sections (
       section_key TEXT PRIMARY KEY,
       visible BOOLEAN DEFAULT true
     )
+  `
+
+  await sql`
+    INSERT INTO site_sections (section_key, visible) VALUES
+      ('projects', true),
+      ('funProjects', true)
+    ON CONFLICT (section_key) DO NOTHING
   `
 
   await sql`
@@ -217,14 +217,16 @@ async function migrate() {
   await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS section_header TEXT`
   await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS nav_label TEXT`
 
-  // Seed defaults for existing rows
-  await sql`UPDATE site_sections SET section_header = 'Career Highlights', nav_label = 'Highlights' WHERE section_key = 'careerHighlights'`
-  await sql`UPDATE site_sections SET section_header = 'Notable Projects', nav_label = 'Projects' WHERE section_key = 'projects'`
-  await sql`UPDATE site_sections SET section_header = 'Projects That Delighted…the fun ones', nav_label = 'Fun' WHERE section_key = 'funProjects'`
-  await sql`UPDATE site_sections SET section_header = 'Hobbies', nav_label = 'Hobbies' WHERE section_key = 'hobbies'`
-  await sql`UPDATE site_sections SET section_header = 'Things I Recommend', nav_label = 'Picks' WHERE section_key = 'recommendations'`
-  await sql`UPDATE site_sections SET section_header = 'What I''m Into', nav_label = 'Listening' WHERE section_key = 'entertainment'`
-  await sql`UPDATE site_sections SET section_header = 'Get in Touch', nav_label = 'Contact' WHERE section_key = 'contact'`
+  // Seed default labels ONLY for rows that have never been set (section_header IS NULL).
+  // The IS NULL guard makes this idempotent: once a value exists — whether the seed
+  // default or an admin customization — re-running migrate leaves it untouched.
+  await sql`UPDATE site_sections SET section_header = 'Career Highlights', nav_label = 'Highlights' WHERE section_key = 'careerHighlights' AND section_header IS NULL`
+  await sql`UPDATE site_sections SET section_header = 'Notable Projects', nav_label = 'Projects' WHERE section_key = 'projects' AND section_header IS NULL`
+  await sql`UPDATE site_sections SET section_header = 'Projects That Delighted…the fun ones', nav_label = 'Fun' WHERE section_key = 'funProjects' AND section_header IS NULL`
+  await sql`UPDATE site_sections SET section_header = 'Hobbies', nav_label = 'Hobbies' WHERE section_key = 'hobbies' AND section_header IS NULL`
+  await sql`UPDATE site_sections SET section_header = 'Things I Recommend', nav_label = 'Picks' WHERE section_key = 'recommendations' AND section_header IS NULL`
+  await sql`UPDATE site_sections SET section_header = 'What I''m Into', nav_label = 'Listening' WHERE section_key = 'entertainment' AND section_header IS NULL`
+  await sql`UPDATE site_sections SET section_header = 'Get in Touch', nav_label = 'Contact' WHERE section_key = 'contact' AND section_header IS NULL`
 
   // Add rows for always-visible sections (hero, experience, education) — label storage only
   await sql`
