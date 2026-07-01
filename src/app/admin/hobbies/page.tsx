@@ -81,14 +81,14 @@ export default function HobbiesAdmin() {
       <AdminNav />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Hobbies</h1>
-        <button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(true) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">
+        <button onClick={() => { setForm({ ...emptyForm, sort_order: items.length }); setEditingId(null); setShowForm(true) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">
           + Add
         </button>
       </div>
 
-      {showForm && (
+      {showForm && editingId === null && (
         <div className="mb-6 rounded-lg bg-white/5 p-4 flex flex-col gap-3">
-          <h2 className="font-medium">{editingId ? 'Edit Hobby' : 'New Hobby'}</h2>
+          <h2 className="font-medium">New Hobby</h2>
           <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
           <input placeholder="Tagline" value={form.tagline} onChange={(e) => setForm({ ...form, tagline: e.target.value })} className="input" />
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
@@ -96,7 +96,10 @@ export default function HobbiesAdmin() {
           <input placeholder="Link URL" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="input" />
           <input placeholder="Link Label" value={form.link_label} onChange={(e) => setForm({ ...form, link_label: e.target.value })} className="input" />
           <input placeholder="Promo Code" value={form.promo_code} onChange={(e) => setForm({ ...form, promo_code: e.target.value })} className="input" />
-<input type="number" placeholder="Sort order" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="input" />
+          <label className="flex items-center gap-2 text-sm text-white/50">Position
+              <input type="number" min={1} value={form.sort_order + 1} onChange={(e) => setForm({ ...form, sort_order: Math.max(0, Number(e.target.value) - 1) })} className="input w-20" />
+              <span className="text-white/30">of {editingId ? items.length : items.length + 1}</span>
+            </label>
           <div className="flex gap-2">
             <button onClick={save} disabled={!form.name} className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-sm disabled:opacity-50 transition-colors">Save</button>
             <button onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">Cancel</button>
@@ -105,7 +108,26 @@ export default function HobbiesAdmin() {
       )}
 
       <div className="flex flex-col gap-2">
-        {items.map((item) => (
+        {items.map((item) => editingId === item.id ? (
+          <div key={item.id} className="rounded-lg bg-white/5 p-4 flex flex-col gap-3">
+            <h2 className="font-medium">Edit Hobby</h2>
+            <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
+            <input placeholder="Tagline" value={form.tagline} onChange={(e) => setForm({ ...form, tagline: e.target.value })} className="input" />
+            <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={2} />
+            <textarea placeholder="Details (one per line)" value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} className="input" rows={3} />
+            <input placeholder="Link URL" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="input" />
+            <input placeholder="Link Label" value={form.link_label} onChange={(e) => setForm({ ...form, link_label: e.target.value })} className="input" />
+            <input placeholder="Promo Code" value={form.promo_code} onChange={(e) => setForm({ ...form, promo_code: e.target.value })} className="input" />
+            <label className="flex items-center gap-2 text-sm text-white/50">Position
+              <input type="number" min={1} value={form.sort_order + 1} onChange={(e) => setForm({ ...form, sort_order: Math.max(0, Number(e.target.value) - 1) })} className="input w-20" />
+              <span className="text-white/30">of {editingId ? items.length : items.length + 1}</span>
+            </label>
+            <div className="flex gap-2">
+              <button onClick={save} disabled={!form.name} className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-sm disabled:opacity-50 transition-colors">Save</button>
+              <button onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">Cancel</button>
+            </div>
+          </div>
+        ) : (
           <div key={item.id} className="rounded-lg bg-white/5 px-4 py-3 flex items-center gap-4">
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{item.name}</p>

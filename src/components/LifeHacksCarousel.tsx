@@ -22,7 +22,7 @@ export default function LifeHacksCarousel({
         <>
           {item.category && (
             <span
-              className="text-[9px] tracking-widest uppercase mb-3 self-start px-2 py-0.5 rounded-full shrink-0"
+              className="inline-flex items-center leading-none text-[9px] tracking-widest uppercase mb-3 self-start px-2 py-1 rounded-full shrink-0"
               style={{
                 color: '#00d4aa',
                 background: 'rgba(0,212,170,0.08)',

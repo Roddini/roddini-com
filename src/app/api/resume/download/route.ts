@@ -5,7 +5,7 @@ import path from 'path'
 
 export const dynamic = 'force-dynamic'
 
-// Public route: serves the résumé PDF. Prefers the admin-uploaded copy stored in
+// Public route: serves the resume PDF. Prefers the admin-uploaded copy stored in
 // the DB (so uploads take effect without a redeploy); falls back to the static
 // file bundled in public/ if nothing has been uploaded yet.
 export async function GET() {
@@ -37,6 +37,6 @@ export async function GET() {
       },
     })
   } catch {
-    return NextResponse.json({ error: 'Résumé not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
   }
 }

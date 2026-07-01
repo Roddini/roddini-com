@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { reorderContiguous } from '@/lib/sortOrder'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -17,6 +18,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     WHERE id = ${id}
     RETURNING *
   `
+  if (sort_order !== undefined && sort_order !== null) {
+    await reorderContiguous('recommendations', Number(id), sort_order)
+    const refreshed = await sql`SELECT * FROM recommendations WHERE id = ${id}`
+    return NextResponse.json(refreshed[0])
+  }
   return NextResponse.json(rows[0])
 }
 

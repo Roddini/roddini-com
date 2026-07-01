@@ -115,11 +115,11 @@ export default function ResumeAdmin() {
     e.target.value = ''
     if (!file) return
     setBusy('parsing')
-    setStatus('Parsing your résumé — this can take a moment…')
+    setStatus('Parsing your resume — this can take a moment…')
     try {
       const b64 = await fileToBase64(file)
       // Parse only — nothing is saved yet. Hold the PDF so it becomes the
-      // downloadable résumé at Publish time (not on select).
+      // downloadable resume at Publish time (not on select).
       const res = await fetch('/api/admin/resume/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -180,7 +180,7 @@ export default function ResumeAdmin() {
       await loadExperience()
       await loadVersions()
       await loadResumeInfo()
-      setStatus(`Published — your live Experience section${pendingPdf ? ' and downloadable résumé are' : ' is'} updated.`)
+      setStatus(`Published — your live Experience section${pendingPdf ? ' and downloadable resume are' : ' is'} updated.`)
     } catch (err) {
       setStatus(`Error: ${(err as Error).message}`)
     } finally {
@@ -230,7 +230,7 @@ export default function ResumeAdmin() {
     <>
       <AdminNav />
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-semibold">Résumé</h1>
+        <h1 className="text-2xl font-semibold">Resume</h1>
         <button
           onClick={publish}
           disabled={busy !== '' || entries.length === 0}
@@ -240,7 +240,7 @@ export default function ResumeAdmin() {
         </button>
       </div>
       <p className="text-sm text-white/40 mb-6">
-        Upload a résumé PDF (from Google Docs: File → Download → PDF) — it&apos;s parsed into the Experience timeline for you to review. Nothing goes live until you click <span className="text-white/70">Publish</span>: that&apos;s when the timeline updates and the uploaded PDF becomes your downloadable résumé. You can also paste text or edit entries by hand.
+        Upload a resume PDF (from Google Docs: File → Download → PDF) — it&apos;s parsed into the Experience timeline for you to review. Nothing goes live until you click <span className="text-white/70">Publish</span>: that&apos;s when the timeline updates and the uploaded PDF becomes your downloadable resume. You can also paste text or edit entries by hand.
       </p>
 
       {/* Import controls */}
@@ -259,14 +259,14 @@ export default function ResumeAdmin() {
           )}
           <p className="text-xs text-white/40">
             {resumeInfo?.hasResume
-              ? `Current download: ${resumeInfo.filename ?? 'résumé.pdf'} (updated ${resumeInfo.updated_at ? new Date(resumeInfo.updated_at).toLocaleString() : ''})`
+              ? `Current download: ${resumeInfo.filename ?? 'resume.pdf'} (updated ${resumeInfo.updated_at ? new Date(resumeInfo.updated_at).toLocaleString() : ''})`
               : 'No PDF uploaded yet — the download serves the bundled file.'}
           </p>
         </div>
         <div className="rounded-lg bg-white/5 p-4 flex flex-col gap-3">
           <h2 className="font-medium text-sm">Paste text</h2>
           <textarea
-            placeholder="Paste your résumé text here…"
+            placeholder="Paste your resume text here…"
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             className="input"

@@ -26,7 +26,7 @@ export default function Projects({ items, sectionHeader = 'Notable Projects' }: 
             {project.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] tracking-widest uppercase px-2.5 py-1 rounded-full"
+                className="inline-flex items-center leading-none text-[10px] tracking-widest uppercase px-2.5 py-1 rounded-full"
                 style={{
                   color: '#00d4aa',
                   background: 'rgba(0,212,170,0.08)',

@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const SYSTEM = `You extract work experience from a résumé into structured JSON for a personal website's timeline.
+const SYSTEM = `You extract work experience from a resume into structured JSON for a personal website's timeline.
 Return ONLY a JSON object — no prose, no markdown fences — of exactly this shape:
 
 {
@@ -14,7 +14,7 @@ Return ONLY a JSON object — no prose, no markdown fences — of exactly this s
       "period": "string — full date range, e.g. '2017 — 2021'",
       "year": "string — short end label shown on the timeline, e.g. '2021' or 'Present'",
       "description": "string — a 1-2 sentence blurb about the company/context; empty string if none",
-      "highlights": ["string — each a full-sentence accomplishment bullet, verbatim from the résumé where possible"],
+      "highlights": ["string — each a full-sentence accomplishment bullet, verbatim from the resume where possible"],
       "tags": ["string — 2-3 short punchy labels summarizing the role, e.g. 'Series A → National Bank'"]
     }
   ]
@@ -24,7 +24,7 @@ Rules:
 - Order entries most-recent first.
 - Keep each recent, substantial role as its own entry.
 - Consolidate early-career and junior roles into ONE combined entry titled "Earlier Roles" — the earliest cluster of shorter sales, operations, assistant, IT, production, or internship-type positions. Put those employers in the "company" field joined by " · ", give it an appropriate early date range (period) and end "year", and include 3-5 representative highlights spanning them. Do NOT give those early jobs separate entries.
-- Keep highlight wording faithful to the résumé; do not invent metrics, titles, or dates.
+- Keep highlight wording faithful to the resume; do not invent metrics, titles, or dates.
 - Do not include education, skills, or contact info — work experience only.`
 
 // Pull the JSON object out of the model's reply, tolerating stray prose or code fences.
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   try {
     const { pdfBase64, text } = await req.json()
     if (!pdfBase64 && !text?.trim()) {
-      return NextResponse.json({ error: 'Provide a PDF or résumé text.' }, { status: 400 })
+      return NextResponse.json({ error: 'Provide a PDF or resume text.' }, { status: 400 })
     }
 
     const content: Anthropic.ContentBlockParam[] = []
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
     content.push({
       type: 'text',
       text: text?.trim()
-        ? `Extract the work experience from this résumé text:\n\n${text.trim()}`
-        : 'Extract the work experience from the attached résumé PDF.',
+        ? `Extract the work experience from this resume text:\n\n${text.trim()}`
+        : 'Extract the work experience from the attached resume PDF.',
     })
 
     const msg = await anthropic.messages.create({
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ items })
   } catch (err) {
     return NextResponse.json(
-      { error: (err as Error).message ?? 'Failed to parse résumé.' },
+      { error: (err as Error).message ?? 'Failed to parse resume.' },
       { status: 500 }
     )
   }
