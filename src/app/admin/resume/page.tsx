@@ -86,6 +86,8 @@ export default function ResumeAdmin() {
   const [status, setStatus] = useState('')
   const [resumeInfo, setResumeInfo] = useState<{ hasResume: boolean; filename?: string; updated_at?: string } | null>(null)
   const [versions, setVersions] = useState<{ id: number; created_at: string; entry_count: number }[]>([])
+  // A PDF selected this session is held here and only stored as the download on Publish.
+  const [pendingPdf, setPendingPdf] = useState<{ base64: string; filename: string } | null>(null)
 
   async function loadExperience() {
     const rows = (await fetch('/api/admin/experience').then((r) => r.json())) as Experience[]
@@ -113,16 +115,11 @@ export default function ResumeAdmin() {
     e.target.value = ''
     if (!file) return
     setBusy('parsing')
-    setStatus('Uploading and parsing your résumé — this can take a moment…')
+    setStatus('Parsing your résumé — this can take a moment…')
     try {
       const b64 = await fileToBase64(file)
-      // Store the PDF as the downloadable résumé
-      await fetch('/api/admin/resume/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pdfBase64: b64, filename: file.name }),
-      })
-      // Parse it into structured experience
+      // Parse only — nothing is saved yet. Hold the PDF so it becomes the
+      // downloadable résumé at Publish time (not on select).
       const res = await fetch('/api/admin/resume/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -130,9 +127,9 @@ export default function ResumeAdmin() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Parse failed')
+      setPendingPdf({ base64: b64, filename: file.name })
       setEntries(fromParsed(data.items ?? []))
-      setStatus(`Parsed ${data.items?.length ?? 0} role(s). Review and edit below, then Publish. The PDF is now the downloadable résumé.`)
-      loadResumeInfo()
+      setStatus(`Parsed ${data.items?.length ?? 0} role(s). Review below, then Publish — that's when the timeline updates and this PDF becomes the download.`)
     } catch (err) {
       setStatus(`Error: ${(err as Error).message}`)
     } finally {
@@ -165,15 +162,25 @@ export default function ResumeAdmin() {
     setBusy('publishing')
     setStatus('Publishing…')
     try {
+      // If a PDF was selected this session, store it as the download now (on Publish).
+      if (pendingPdf) {
+        await fetch('/api/admin/resume/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pdfBase64: pendingPdf.base64, filename: pendingPdf.filename }),
+        })
+      }
       const res = await fetch('/api/admin/experience', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: toPayload(entries) }),
       })
       if (!res.ok) throw new Error('Publish failed')
+      setPendingPdf(null)
       await loadExperience()
       await loadVersions()
-      setStatus('Published — your live Experience section is updated.')
+      await loadResumeInfo()
+      setStatus(`Published — your live Experience section${pendingPdf ? ' and downloadable résumé are' : ' is'} updated.`)
     } catch (err) {
       setStatus(`Error: ${(err as Error).message}`)
     } finally {
@@ -233,7 +240,7 @@ export default function ResumeAdmin() {
         </button>
       </div>
       <p className="text-sm text-white/40 mb-6">
-        Upload a résumé PDF (from Google Docs: File → Download → PDF) — it becomes your downloadable résumé and is parsed into the Experience timeline for you to review. Or paste text, or just edit the entries below by hand.
+        Upload a résumé PDF (from Google Docs: File → Download → PDF) — it&apos;s parsed into the Experience timeline for you to review. Nothing goes live until you click <span className="text-white/70">Publish</span>: that&apos;s when the timeline updates and the uploaded PDF becomes your downloadable résumé. You can also paste text or edit entries by hand.
       </p>
 
       {/* Import controls */}
@@ -244,6 +251,12 @@ export default function ResumeAdmin() {
             {busy === 'parsing' ? 'Working…' : 'Choose PDF'}
             <input type="file" accept="application/pdf" onChange={onPdfSelected} disabled={busy !== ''} className="hidden" />
           </label>
+          {pendingPdf && (
+            <p className="text-xs text-teal-300/80">
+              Ready to publish: {pendingPdf.filename} — becomes the download on Publish.
+              <button onClick={() => setPendingPdf(null)} className="ml-2 text-white/40 hover:text-white/70 underline">remove</button>
+            </p>
+          )}
           <p className="text-xs text-white/40">
             {resumeInfo?.hasResume
               ? `Current download: ${resumeInfo.filename ?? 'résumé.pdf'} (updated ${resumeInfo.updated_at ? new Date(resumeInfo.updated_at).toLocaleString() : ''})`
