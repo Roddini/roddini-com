@@ -90,6 +90,11 @@ export type SiteSection = {
   visible: boolean
   section_header: string | null
   nav_label: string | null
+  sort_order: number | null
+  draft_visible: boolean | null
+  draft_section_header: string | null
+  draft_nav_label: string | null
+  draft_sort_order: number | null
 }
 
 export type NavLink = {

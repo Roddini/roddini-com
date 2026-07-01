@@ -5,27 +5,25 @@ import StarField from '@/components/StarField'
 import SectionHeader from '@/components/SectionHeader'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import type { Recommendation } from '@/lib/types'
+import type { Recommendation, LookupValue } from '@/lib/types'
 
-const CATEGORY_COLORS: Record<string, string> = {
-  tech: '#22d3ee',
-  food: '#f59e0b',
-  costco: '#0ea5e9',
-  entertainment: '#a78bfa',
-  general: '#00d4aa',
-}
+type CategoryOption = Pick<LookupValue, 'value' | 'label' | 'color'>
 
-const CATEGORIES = [
-  { value: 'all', label: 'All' },
-  { value: 'tech', label: 'Tech' },
-  { value: 'food', label: 'Food' },
-  { value: 'costco', label: 'Costco' },
-  { value: 'entertainment', label: 'Entertainment' },
-  { value: 'general', label: 'General' },
-]
-
-export default function RecommendationsContent({ recommendations }: { recommendations: Recommendation[] }) {
+export default function RecommendationsContent({
+  recommendations,
+  categories,
+}: {
+  recommendations: Recommendation[]
+  categories: CategoryOption[]
+}) {
   const [activeCategory, setActiveCategory] = useState('all')
+
+  // Colors + filter buttons are derived from the DB lookup_values (managed in
+  // /admin/categories), so a newly-added category shows up here automatically.
+  const CATEGORY_COLORS: Record<string, string> = Object.fromEntries(
+    categories.map((c) => [c.value, c.color ?? '#00d4aa'])
+  )
+  const CATEGORIES = [{ value: 'all', label: 'All' }, ...categories.map((c) => ({ value: c.value, label: c.label }))]
 
   const filtered = activeCategory === 'all'
     ? recommendations

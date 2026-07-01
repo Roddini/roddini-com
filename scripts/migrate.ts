@@ -301,6 +301,36 @@ async function migrate() {
     ON CONFLICT (section_key) DO NOTHING
   `
 
+  // Stage-then-publish + reorder support for the dashboard. The LIVE columns
+  // (visible / section_header / nav_label / sort_order) drive the homepage; the
+  // draft_* columns hold un-published edits until the dashboard "Publish" copies
+  // them across. All guarded by IS NULL so re-running migrate never clobbers
+  // admin edits.
+  await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS sort_order INT`
+  await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS draft_visible BOOLEAN`
+  await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS draft_section_header TEXT`
+  await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS draft_nav_label TEXT`
+  await sql`ALTER TABLE site_sections ADD COLUMN IF NOT EXISTS draft_sort_order INT`
+
+  // Seed the live order to match the homepage. Hero is pinned (-1, never reordered).
+  await sql`UPDATE site_sections SET sort_order = -1 WHERE section_key = 'hero'             AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  0 WHERE section_key = 'careerHighlights' AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  1 WHERE section_key = 'experience'       AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  2 WHERE section_key = 'projects'         AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  3 WHERE section_key = 'funProjects'      AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  4 WHERE section_key = 'education'        AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  5 WHERE section_key = 'contact'          AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  6 WHERE section_key = 'hobbies'          AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  7 WHERE section_key = 'recommendations'  AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  8 WHERE section_key = 'entertainment'    AND sort_order IS NULL`
+  await sql`UPDATE site_sections SET sort_order =  9 WHERE section_key = 'lifeHacks'        AND sort_order IS NULL`
+
+  // Initialize draft columns from live so there is always a draft to edit.
+  await sql`UPDATE site_sections SET draft_visible        = visible        WHERE draft_visible IS NULL`
+  await sql`UPDATE site_sections SET draft_section_header = section_header WHERE draft_section_header IS NULL AND section_header IS NOT NULL`
+  await sql`UPDATE site_sections SET draft_nav_label      = nav_label      WHERE draft_nav_label IS NULL AND nav_label IS NOT NULL`
+  await sql`UPDATE site_sections SET draft_sort_order     = sort_order     WHERE draft_sort_order IS NULL`
+
   // Experience — moved out of static resume.ts so it's editable via /admin/resume
   // (upload a résumé PDF → parse → publish) without a code change or redeploy.
   await sql`

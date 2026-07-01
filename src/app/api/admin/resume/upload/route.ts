@@ -1,7 +1,7 @@
 import { sql } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Reports whether a résumé PDF is currently stored (for the admin UI status line).
+// Reports whether a resume PDF is currently stored (for the admin UI status line).
 export async function GET() {
   const rows = (await sql`
     SELECT filename, updated_at FROM assets WHERE key = 'resume_pdf'
@@ -10,7 +10,7 @@ export async function GET() {
   return NextResponse.json({ hasResume: true, filename: rows[0].filename, updated_at: rows[0].updated_at })
 }
 
-// Stores/replaces the downloadable résumé PDF (base64) in the DB.
+// Stores/replaces the downloadable resume PDF (base64) in the DB.
 export async function POST(req: NextRequest) {
   const { pdfBase64, filename } = await req.json()
   if (!pdfBase64) {

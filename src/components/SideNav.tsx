@@ -4,58 +4,58 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useScrollVisibility } from '@/hooks/useScrollVisibility'
 
-const SECTIONS = [
-  { id: 'hero', label: 'Intro' },
-  { id: 'career-highlights', label: 'Highlights' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'fun-projects', label: 'Fun' },
-  { id: 'education', label: 'Education' },
-  { id: 'contact', label: 'Contact' },
-  { id: 'hobbies', label: 'Hobbies' },
-  { id: 'recommendations', label: 'Picks' },
-  { id: 'entertainment', label: 'Listening' },
-  { id: 'life-hacks', label: 'Life Hacks' },
-]
+// A section that exists on the page. `showDot: false` means the section is
+// rendered (and participates in scroll tracking) but has no SideNav dot — used
+// when its nav label is explicitly blanked. `sections` is already ordered to
+// match the homepage.
+export type NavSection = { id: string; label: string; showDot: boolean }
 
-export default function SideNav({ hiddenSectionIds = [], navLabels = {} }: { hiddenSectionIds?: string[]; navLabels?: Record<string, string> }) {
-  const sections = SECTIONS.filter((s) => !hiddenSectionIds.includes(s.id))
+export default function SideNav({ sections = [] }: { sections?: NavSection[] }) {
   const visible = useScrollVisibility()
   const [active, setActive] = useState('hero')
 
-  // Track active section via scroll position
+  // Track active section via scroll position. We compute the best-overlapping
+  // section across ALL on-page sections (including dot-less ones), then, if the
+  // winner has no dot, walk backward to the nearest preceding section that does
+  // — so a blanked-label section keeps the dot above it lit until you scroll
+  // past both.
   useEffect(() => {
-    const sectionEls = SECTIONS.filter((s) => !hiddenSectionIds.includes(s.id))
-      .map(({ id }) => ({ id, el: document.getElementById(id) }))
-      .filter((x): x is { id: string; el: HTMLElement } => x.el !== null)
+    const sectionEls = sections
+      .map((s) => ({ ...s, el: document.getElementById(s.id) }))
+      .filter((x): x is NavSection & { el: HTMLElement } => x.el !== null)
 
     const update = () => {
       const vh = window.innerHeight
       const zoneTop = vh * 0.1
       const zoneBottom = vh * 0.7
-      let bestId = sectionEls[0]?.id ?? 'hero'
+      let bestIdx = 0
       let bestOverlap = -Infinity
 
-      for (const { id, el } of sectionEls) {
-        const rect = el.getBoundingClientRect()
+      sectionEls.forEach((s, i) => {
+        const rect = s.el.getBoundingClientRect()
         const overlap = Math.min(rect.bottom, zoneBottom) - Math.max(rect.top, zoneTop)
         if (overlap > bestOverlap) {
           bestOverlap = overlap
-          bestId = id
+          bestIdx = i
         }
-      }
+      })
 
-      setActive(bestId)
+      // Fall back to the nearest preceding section that has a dot.
+      let idx = bestIdx
+      while (idx > 0 && !sectionEls[idx]?.showDot) idx--
+      setActive(sectionEls[idx]?.id ?? 'hero')
     }
 
     update()
     window.addEventListener('scroll', update, { passive: true })
     return () => window.removeEventListener('scroll', update)
-  }, [hiddenSectionIds])
+  }, [sections])
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  const dots = sections.filter((s) => s.showDot)
 
   return (
     <motion.nav
@@ -65,15 +65,14 @@ export default function SideNav({ hiddenSectionIds = [], navLabels = {} }: { hid
       className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col items-end gap-5"
       aria-label="Page navigation"
     >
-      {sections.map(({ id, label }) => {
+      {dots.map(({ id, label }) => {
         const isActive = active === id
-        const displayLabel = navLabels[id] ?? label
         return (
           <button
             key={id}
             onClick={() => scrollTo(id)}
             className="flex items-center gap-2.5 group"
-            aria-label={`Go to ${displayLabel}`}
+            aria-label={`Go to ${label}`}
           >
             <span
               className="text-[10px] tracking-[0.25em] uppercase font-light transition-all duration-300"
@@ -81,7 +80,7 @@ export default function SideNav({ hiddenSectionIds = [], navLabels = {} }: { hid
                 color: isActive ? '#00d4aa' : 'rgba(100,116,139,0.6)',
               }}
             >
-              {displayLabel}
+              {label}
             </span>
             <div
               className="rounded-full transition-all duration-300"

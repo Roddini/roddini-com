@@ -79,7 +79,7 @@ export default function FunProjectsAdmin() {
       <AdminNav />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Fun Projects</h1>
-        <button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(true) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">
+        <button onClick={() => { setForm({ ...emptyForm, sort_order: items.length }); setEditingId(null); setShowForm(true) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">
           + Add
         </button>
       </div>
@@ -92,7 +92,10 @@ export default function FunProjectsAdmin() {
           <input placeholder="Year" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} className="input" />
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input" rows={3} />
           <input placeholder="Tags (comma-separated)" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} className="input" />
-          <input type="number" placeholder="Sort order" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="input" />
+          <label className="flex items-center gap-2 text-sm text-white/50">Position
+            <input type="number" min={1} value={form.sort_order + 1} onChange={(e) => setForm({ ...form, sort_order: Math.max(0, Number(e.target.value) - 1) })} className="input w-20" />
+            <span className="text-white/30">of {editingId ? items.length : items.length + 1}</span>
+          </label>
           <div className="flex gap-2">
             <button onClick={save} disabled={!form.name} className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-sm disabled:opacity-50 transition-colors">Save</button>
             <button onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-sm transition-colors">Cancel</button>

@@ -162,7 +162,7 @@ export default function TimelineEntry({ entry, index }: Props) {
           {entry.tags.map((tag) => (
             <span
               key={tag}
-              className="text-[10px] tracking-widest uppercase px-2.5 py-1 rounded-full"
+              className="inline-flex items-center leading-none text-[10px] tracking-widest uppercase px-2.5 py-1 rounded-full"
               style={{
                 color: entry.accent,
                 background: `rgba(${hexToRgb(entry.accent)},0.1)`,

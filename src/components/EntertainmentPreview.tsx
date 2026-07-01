@@ -33,7 +33,7 @@ export default function EntertainmentPreview({
           <div className="flex items-center gap-2 mb-3 shrink-0">
             {item.category && (
               <span
-                className="text-[9px] tracking-widest uppercase px-2 py-0.5 rounded-full"
+                className="inline-flex items-center leading-none text-[9px] tracking-widest uppercase px-2 py-1 rounded-full"
                 style={{
                   color: FALLBACK_COLOR,
                   background: `${FALLBACK_COLOR}15`,

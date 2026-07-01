@@ -28,7 +28,7 @@ export default function RecommendationsCarousel({
         return (
           <>
             <span
-              className="text-[9px] tracking-widest uppercase mb-3 self-start px-2 py-0.5 rounded-full shrink-0"
+              className="inline-flex items-center leading-none text-[9px] tracking-widest uppercase mb-3 self-start px-2 py-1 rounded-full shrink-0"
               style={{
                 color: accentColor,
                 background: `${accentColor}15`,

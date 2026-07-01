@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { sql } from '@/lib/db'
-import type { Recommendation } from '@/lib/types'
+import type { Recommendation, LookupValue } from '@/lib/types'
 import RecommendationsContent from './RecommendationsContent'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Recommendations',
@@ -10,6 +12,9 @@ export const metadata: Metadata = {
 }
 
 export default async function RecommendationsPage() {
-  const recommendations = await sql`SELECT * FROM recommendations WHERE published = true ORDER BY sort_order ASC` as unknown as Recommendation[]
-  return <RecommendationsContent recommendations={recommendations} />
+  const [recommendations, categories] = await Promise.all([
+    sql`SELECT * FROM recommendations WHERE published = true ORDER BY sort_order ASC` as unknown as Recommendation[],
+    sql`SELECT value, label, color FROM lookup_values WHERE type = 'recommendation_category' ORDER BY sort_order ASC` as unknown as LookupValue[],
+  ])
+  return <RecommendationsContent recommendations={recommendations} categories={categories} />
 }

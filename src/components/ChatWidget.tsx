@@ -26,7 +26,7 @@ function linkify(text: string) {
     if (!mdMatch && !bareUrl) return part
     const href = mdMatch ? mdMatch[2] : part
     const rawLabel = mdMatch ? mdMatch[1] : 'View'
-    // Render a download affordance for the résumé / any PDF.
+    // Render a download affordance for the resume / any PDF.
     const isDownload = /\.pdf($|\?)/i.test(href) || href.includes('/api/resume/download')
     const label = `${rawLabel} ${isDownload ? '↓' : '→'}`
     return (

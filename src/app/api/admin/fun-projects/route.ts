@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { reorderContiguous } from '@/lib/sortOrder'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
@@ -8,10 +9,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const { name, company, year, description, tags, sort_order, published, featured_in_carousel } = await request.json()
-  const rows = await sql`
+  const inserted = await sql`
     INSERT INTO fun_projects (name, company, year, description, tags, sort_order, published, featured_in_carousel)
     VALUES (${name}, ${company}, ${year}, ${description}, ${tags ?? []}, ${sort_order ?? 0}, ${published ?? true}, ${featured_in_carousel ?? true})
     RETURNING *
   `
+  await reorderContiguous('fun_projects', inserted[0].id, sort_order ?? Number.MAX_SAFE_INTEGER)
+  const rows = await sql`SELECT * FROM fun_projects WHERE id = ${inserted[0].id}`
   return NextResponse.json(rows[0])
 }
