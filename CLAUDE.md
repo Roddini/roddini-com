@@ -31,10 +31,11 @@ There are **two** content sources — don't confuse them:
 
 `src/lib/db.ts` exports a `sql` tagged-template function via `@neondatabase/serverless`. Pages query it directly in server components — no ORM, no abstraction layer. Cast results with `as unknown as Type[]` since Neon returns `Record<string, any>[]`.
 
-Tables: `experience`, `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `projects`, `fun_projects`, `life_hacks`, `lookup_values`, `site_sections`, `chat_sessions`, `chat_access_requests`, `chat_conversations`, `chat_messages`, `nav_links`, `site_config`, `assets`.
+Tables: `experience`, `experience_versions`, `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `projects`, `fun_projects`, `life_hacks`, `lookup_values`, `site_sections`, `chat_sessions`, `chat_access_requests`, `chat_conversations`, `chat_messages`, `nav_links`, `site_config`, `assets`.
 
 - Each content table has `published` (show anywhere) and `featured_in_carousel` (show on homepage carousel).
 - `experience` — one row per role: `role`, `company`, `period`, `year`, `description`, `highlights TEXT[]`, `tags TEXT[]`, `accent`, `sort_order`, `published`. Seeded once from `RESUME.experience` (guarded by an emptiness check); drives the homepage Timeline. Edited via `/admin/resume`.
+- `experience_versions` — `id`, `snapshot JSONB`, `created_at`. A snapshot of the whole `experience` set is saved here before every Publish/restore (see `src/lib/experience.ts` → `snapshotCurrentExperience` / `replaceExperience`), pruned to the newest 10. Powers the "Restore" buttons on `/admin/resume`.
 - `assets` — blob store: `key` (PK), `data_base64`, `content_type`, `filename`. Holds the downloadable résumé PDF under key `resume_pdf`, served by `/api/resume/download`. Stored base64-in-DB so admin uploads take effect without a redeploy (Vercel's runtime filesystem is read-only).
 - `chat_conversations` — one row per chat widget session: `id` (client-generated UUID), `visitor_id` (persistent localStorage id), `ip`, `country`/`city` (from Vercel geo headers, null locally), `message_count`, `tokens_used`, `started_at`, `updated_at`.
 - `chat_messages` — `conversation_id` (FK → `chat_conversations`, `ON DELETE CASCADE`), `role` (`user`/`assistant`), `content`, `created_at`. Index on `conversation_id`.
@@ -107,6 +108,7 @@ The Experience section is DB-driven and editable end-to-end from **`/admin/resum
 
 - **Upload a PDF** (Google Docs → File → Download → PDF): the file is stored via `POST /api/admin/resume/upload` (becomes the download) **and** sent to `POST /api/admin/resume/parse`, which passes it to `claude-opus-4-8` as a base64 `document` block and returns structured experience entries. Parsing uses a prompt-based JSON extraction (tolerant parser strips code fences) — model-version-agnostic, and every result goes through a human review step.
 - **Review & publish**: the parsed entries populate an editable list (role/company/period/year/description/highlights/tags/accent/order, all editable; highlights edited as one-per-line text, tags comma-separated). **Publish** calls `PUT /api/admin/experience` (replace-all) → the homepage Timeline updates with no redeploy. You can also paste text or hand-edit instead of uploading.
+- **Version history / undo**: every Publish (and every restore) first snapshots the current set into `experience_versions`. The page lists the last 10 versions with a **Restore** button — `POST /api/admin/experience/versions { restoreId }` snapshots the current state (so the restore itself is undoable) then replaces experience with that version. The parser also folds early-career/junior roles into a single "Earlier Roles" entry.
 - **Downloadable résumé**: the Contact button and Goose both link to `/api/resume/download`, which serves the uploaded PDF from `assets` (or the bundled file as fallback). `linkify()` in `ChatWidget.tsx` renders any `.pdf` / `/api/resume/download` link as a "Download résumé ↓" pill; `content/chatbot-context.md` tells Goose to offer it.
 
 ### Chatbot — Goose

@@ -335,6 +335,16 @@ async function migrate() {
     console.log(`Seeded ${RESUME.experience.length} experience rows`)
   }
 
+  // Experience version history — a JSON snapshot of the whole experience set is
+  // saved here before each Publish/restore, so admin edits can be rolled back.
+  await sql`
+    CREATE TABLE IF NOT EXISTS experience_versions (
+      id SERIAL PRIMARY KEY,
+      snapshot JSONB NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
   // Binary assets (the downloadable résumé PDF) stored base64 in the DB, so an
   // admin upload takes effect immediately — Vercel's runtime filesystem is
   // read-only, so we can't overwrite public/ at request time.

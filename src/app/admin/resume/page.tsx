@@ -85,6 +85,7 @@ export default function ResumeAdmin() {
   const [busy, setBusy] = useState<'' | 'parsing' | 'publishing'>('')
   const [status, setStatus] = useState('')
   const [resumeInfo, setResumeInfo] = useState<{ hasResume: boolean; filename?: string; updated_at?: string } | null>(null)
+  const [versions, setVersions] = useState<{ id: number; created_at: string; entry_count: number }[]>([])
 
   async function loadExperience() {
     const rows = (await fetch('/api/admin/experience').then((r) => r.json())) as Experience[]
@@ -96,9 +97,15 @@ export default function ResumeAdmin() {
     setResumeInfo(info)
   }
 
+  async function loadVersions() {
+    const rows = await fetch('/api/admin/experience/versions').then((r) => r.json())
+    setVersions(Array.isArray(rows) ? rows : [])
+  }
+
   useEffect(() => {
     loadExperience()
     loadResumeInfo()
+    loadVersions()
   }, [])
 
   async function onPdfSelected(e: React.ChangeEvent<HTMLInputElement>) {
@@ -165,7 +172,30 @@ export default function ResumeAdmin() {
       })
       if (!res.ok) throw new Error('Publish failed')
       await loadExperience()
+      await loadVersions()
       setStatus('Published — your live Experience section is updated.')
+    } catch (err) {
+      setStatus(`Error: ${(err as Error).message}`)
+    } finally {
+      setBusy('')
+    }
+  }
+
+  async function restore(versionId: number) {
+    if (!confirm('Restore this version? Your current entries will be snapshotted first, so you can undo the restore too.')) return
+    setBusy('publishing')
+    setStatus('Restoring…')
+    try {
+      const res = await fetch('/api/admin/experience/versions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restoreId: versionId }),
+      })
+      const rows = await res.json()
+      if (!res.ok) throw new Error(rows.error ?? 'Restore failed')
+      setEntries(fromExperience(rows as Experience[]))
+      await loadVersions()
+      setStatus('Restored — the live Experience section now matches this version.')
     } catch (err) {
       setStatus(`Error: ${(err as Error).message}`)
     } finally {
@@ -287,6 +317,31 @@ export default function ResumeAdmin() {
         ))}
         {entries.length === 0 && <p className="text-white/30 text-sm">No experience yet. Upload a PDF, paste text, or add an entry.</p>}
       </div>
+
+      {/* Version history — a snapshot is saved before every Publish/restore */}
+      {versions.length > 0 && (
+        <div className="mt-10">
+          <h2 className="font-medium mb-1">Version history</h2>
+          <p className="text-xs text-white/40 mb-3">The last {versions.length} published version{versions.length === 1 ? '' : 's'}. Restoring replaces the live Experience section (and snapshots the current one first, so it&apos;s undoable).</p>
+          <div className="flex flex-col gap-2">
+            {versions.map((v) => (
+              <div key={v.id} className="rounded-lg bg-white/5 px-4 py-3 flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm">{new Date(v.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-white/40">{v.entry_count} entr{v.entry_count === 1 ? 'y' : 'ies'}</p>
+                </div>
+                <button
+                  onClick={() => restore(v.id)}
+                  disabled={busy !== ''}
+                  className="text-white/60 hover:text-white text-sm transition-colors disabled:opacity-40"
+                >
+                  Restore
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   )
 }

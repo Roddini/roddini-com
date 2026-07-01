@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { snapshotCurrentExperience, replaceExperience } from '@/lib/experience'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
@@ -20,24 +21,16 @@ export async function POST(request: NextRequest) {
 }
 
 // Replace-all: publishes a full set of parsed/edited entries at once.
-// Deletes existing rows, then inserts the provided ones in order.
+// Snapshots the current set into experience_versions first (so it can be reverted),
+// then replaces it with the provided entries in order.
 export async function PUT(request: NextRequest) {
   const { items } = await request.json()
   if (!Array.isArray(items)) {
     return NextResponse.json({ error: 'items must be an array' }, { status: 400 })
   }
 
-  await sql`DELETE FROM experience`
-  for (let i = 0; i < items.length; i++) {
-    const e = items[i]
-    await sql`
-      INSERT INTO experience (role, company, period, year, description, highlights, tags, accent, sort_order, published)
-      VALUES (
-        ${e.role ?? ''}, ${e.company ?? ''}, ${e.period ?? ''}, ${e.year ?? ''}, ${e.description ?? ''},
-        ${e.highlights ?? []}, ${e.tags ?? []}, ${e.accent ?? '#00d4aa'}, ${i}, ${e.published ?? true}
-      )
-    `
-  }
+  await snapshotCurrentExperience()
+  await replaceExperience(items)
 
   const rows = await sql`SELECT * FROM experience ORDER BY sort_order ASC`
   return NextResponse.json(rows)
