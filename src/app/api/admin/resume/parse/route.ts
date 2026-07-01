@@ -22,7 +22,8 @@ Return ONLY a JSON object — no prose, no markdown fences — of exactly this s
 
 Rules:
 - Order entries most-recent first.
-- Include every distinct role. Group clearly-related early roles into one entry if the résumé does.
+- Keep each recent, substantial role as its own entry.
+- Consolidate early-career and junior roles into ONE combined entry titled "Earlier Roles" — the earliest cluster of shorter sales, operations, assistant, IT, production, or internship-type positions. Put those employers in the "company" field joined by " · ", give it an appropriate early date range (period) and end "year", and include 3-5 representative highlights spanning them. Do NOT give those early jobs separate entries.
 - Keep highlight wording faithful to the résumé; do not invent metrics, titles, or dates.
 - Do not include education, skills, or contact info — work experience only.`
 
