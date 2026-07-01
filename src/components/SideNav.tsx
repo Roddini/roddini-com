@@ -25,7 +25,7 @@ export default function SideNav({ hiddenSectionIds = [], navLabels = {} }: { hid
 
   // Track active section via scroll position
   useEffect(() => {
-    const sectionEls = sections
+    const sectionEls = SECTIONS.filter((s) => !hiddenSectionIds.includes(s.id))
       .map(({ id }) => ({ id, el: document.getElementById(id) }))
       .filter((x): x is { id: string; el: HTMLElement } => x.el !== null)
 
@@ -51,7 +51,7 @@ export default function SideNav({ hiddenSectionIds = [], navLabels = {} }: { hid
     update()
     window.addEventListener('scroll', update, { passive: true })
     return () => window.removeEventListener('scroll', update)
-  }, [])
+  }, [hiddenSectionIds])
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })

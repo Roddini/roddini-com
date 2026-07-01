@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { RESUME } from '@/data/resume'
+import SectionHeader from './SectionHeader'
 
 export default function Education({ sectionHeader = 'Education' }: { sectionHeader?: string }) {
   const edu = RESUME.education
@@ -9,17 +10,7 @@ export default function Education({ sectionHeader = 'Education' }: { sectionHead
   return (
     <section id="education" className="relative py-20 pb-20" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
-        {/* Section label */}
-        <div className="flex items-center gap-4 mb-10">
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-          <span
-            className="text-[10px] tracking-[0.35em] uppercase font-light"
-            style={{ color: 'rgba(0,212,170,0.6)' }}
-          >
-            {sectionHeader}
-          </span>
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-        </div>
+        <SectionHeader className="mb-10">{sectionHeader}</SectionHeader>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}

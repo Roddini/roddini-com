@@ -1,6 +1,7 @@
 'use client'
 
 import StarField from '@/components/StarField'
+import SectionHeader from '@/components/SectionHeader'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { Hobby } from '@/lib/types'
@@ -21,16 +22,8 @@ export default function HobbiesContent({ hobbies }: { hobbies: Hobby[] }) {
           ← Back
         </Link>
 
-        <div className="flex items-center gap-4 mb-16">
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-          <span
-            className="text-[10px] tracking-[0.35em] uppercase font-light"
-            style={{ color: 'rgba(0,212,170,0.6)' }}
-          >
-            Hobbies
-          </span>
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-        </div>
+        <h1 className="sr-only">Hobbies</h1>
+        <SectionHeader>Hobbies</SectionHeader>
 
         <div className="flex flex-col gap-8">
           {hobbies.map((hobby, i) => (

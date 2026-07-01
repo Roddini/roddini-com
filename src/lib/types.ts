@@ -58,6 +58,20 @@ export type Project = {
 
 export type FunProject = Project
 
+export type Experience = {
+  id: number
+  role: string
+  company: string
+  period: string
+  year: string
+  description: string
+  highlights: string[]
+  tags: string[]
+  accent: string
+  sort_order: number
+  published: boolean
+}
+
 export type CareerHighlight = {
   id: number
   headline: string

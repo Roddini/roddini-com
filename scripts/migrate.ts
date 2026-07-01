@@ -1,5 +1,6 @@
 import { neon } from '@neondatabase/serverless'
 import * as dotenv from 'dotenv'
+import { RESUME } from '../src/data/resume'
 
 dotenv.config({ path: '.env.local' })
 
@@ -246,13 +247,22 @@ async function migrate() {
       sort_order INT  DEFAULT 0
     )
   `
+  // De-duplicate rows created before href was unique. The seed below originally
+  // used ON CONFLICT DO NOTHING with no unique target, so every migrate re-inserted
+  // the defaults. Keep the lowest id per href, then enforce uniqueness so the seed
+  // is genuinely idempotent from here on.
+  await sql`
+    DELETE FROM nav_links a USING nav_links b
+    WHERE a.href = b.href AND a.id > b.id
+  `
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS nav_links_href_key ON nav_links (href)`
   await sql`
     INSERT INTO nav_links (href, label, sort_order) VALUES
       ('/', 'Home', 0),
       ('/hobbies', 'Hobbies', 1),
       ('/recommendations', 'Recommendations', 2),
       ('/entertainment', 'Entertainment', 3)
-    ON CONFLICT DO NOTHING
+    ON CONFLICT (href) DO NOTHING
   `
 
   // site_config table for hero content
@@ -289,6 +299,53 @@ async function migrate() {
     INSERT INTO site_sections (section_key, visible, section_header, nav_label)
     VALUES ('lifeHacks', true, 'Life Hacks', 'Life Hacks')
     ON CONFLICT (section_key) DO NOTHING
+  `
+
+  // Experience — moved out of static resume.ts so it's editable via /admin/resume
+  // (upload a résumé PDF → parse → publish) without a code change or redeploy.
+  await sql`
+    CREATE TABLE IF NOT EXISTS experience (
+      id SERIAL PRIMARY KEY,
+      role TEXT NOT NULL,
+      company TEXT,
+      period TEXT,
+      year TEXT,
+      description TEXT,
+      highlights TEXT[] DEFAULT '{}',
+      tags TEXT[] DEFAULT '{}',
+      accent TEXT DEFAULT '#00d4aa',
+      sort_order INTEGER DEFAULT 0,
+      published BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  // One-time seed from the static resume so the timeline is unchanged after first migrate.
+  // Guarded by an emptiness check so re-running never overwrites admin edits.
+  const expCount = (await sql`SELECT COUNT(*)::int AS count FROM experience`) as unknown as { count: number }[]
+  if (expCount[0].count === 0) {
+    let i = 0
+    for (const e of RESUME.experience) {
+      await sql`
+        INSERT INTO experience (role, company, period, year, description, highlights, tags, accent, sort_order)
+        VALUES (${e.role}, ${e.company}, ${e.period}, ${e.year}, ${e.description}, ${e.highlights}, ${e.tags}, ${e.accent}, ${i})
+      `
+      i++
+    }
+    console.log(`Seeded ${RESUME.experience.length} experience rows`)
+  }
+
+  // Binary assets (the downloadable résumé PDF) stored base64 in the DB, so an
+  // admin upload takes effect immediately — Vercel's runtime filesystem is
+  // read-only, so we can't overwrite public/ at request time.
+  await sql`
+    CREATE TABLE IF NOT EXISTS assets (
+      key          TEXT PRIMARY KEY,
+      data_base64  TEXT NOT NULL,
+      content_type TEXT NOT NULL,
+      filename     TEXT,
+      updated_at   TIMESTAMPTZ DEFAULT NOW()
+    )
   `
 
   console.log('Migrations complete.')

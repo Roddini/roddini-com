@@ -18,19 +18,24 @@ const THINKING_PHRASE =
 const FALLBACK_DISCLOSURE = "Goose is an AI assistant."
 
 function linkify(text: string) {
-  const parts = text.split(/(\[[^\]]+\]\(https?:\/\/[^)]+\)|https?:\/\/[^\s]+)/g)
+  // Matches markdown links to absolute (http/https) or relative (/…) URLs, plus bare URLs.
+  const parts = text.split(/(\[[^\]]+\]\((?:https?:\/\/|\/)[^)]+\)|https?:\/\/[^\s]+)/g)
   return parts.map((part, i) => {
-    const mdMatch = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/)
+    const mdMatch = part.match(/^\[([^\]]+)\]\(((?:https?:\/\/|\/)[^)]+)\)$/)
     const bareUrl = !mdMatch && part.match(/^https?:\/\//)
     if (!mdMatch && !bareUrl) return part
     const href = mdMatch ? mdMatch[2] : part
-    const label = mdMatch ? `${mdMatch[1]} →` : 'View →'
+    const rawLabel = mdMatch ? mdMatch[1] : 'View'
+    // Render a download affordance for the résumé / any PDF.
+    const isDownload = /\.pdf($|\?)/i.test(href) || href.includes('/api/resume/download')
+    const label = `${rawLabel} ${isDownload ? '↓' : '→'}`
     return (
       <a
         key={i}
         href={href}
-        target="_blank"
+        target={isDownload ? undefined : '_blank'}
         rel="noopener noreferrer"
+        download={isDownload || undefined}
         className="underline underline-offset-2 transition-opacity duration-150"
         style={{ color: '#00d4aa' }}
         onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = '0.7')}
@@ -142,7 +147,6 @@ export default function ChatWidget() {
 
       const reader = res.body!.getReader()
       const decoder = new TextDecoder()
-      let accumulated = ''
 
       // Append response below the thinking phrase (never remove it)
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
@@ -150,11 +154,12 @@ export default function ChatWidget() {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-        accumulated += decoder.decode(value, { stream: true })
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          { role: 'assistant', content: accumulated },
-        ])
+        const chunk = decoder.decode(value, { stream: true })
+        // Grow the last message straight from state — no mutable closure variable.
+        setMessages((prev) => {
+          const last = prev[prev.length - 1]
+          return [...prev.slice(0, -1), { role: 'assistant', content: (last?.content ?? '') + chunk }]
+        })
       }
     } catch {
       // Append error below thinking phrase rather than replacing it

@@ -29,6 +29,10 @@ export default function GooseIcon({ size = 56 }: { size?: number }) {
 
     let rafId: number
     let cancelled = false
+    let removeVis: (() => void) | null = null
+    const prefersReduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const img = new Image()
     img.src = '/goose-laying.png'
@@ -89,10 +93,10 @@ export default function GooseIcon({ size = 56 }: { size?: number }) {
       }
 
       const t0 = performance.now()
+      let running = true
 
-      function draw(now: number) {
-        if (cancelled) return
-        const t = now - t0
+      const renderFrame = (now: number) => {
+        const t = prefersReduced ? 0 : now - t0
         const globalPulse = 0.2 + 0.8 * (0.5 + 0.5 * Math.sin(t * 0.00126))
 
         ctx.clearRect(0, 0, W, H)
@@ -114,18 +118,41 @@ export default function GooseIcon({ size = 56 }: { size?: number }) {
           ctx.fillStyle = `rgba(0,212,170,${alpha})`
           ctx.fill()
         }
-
-        rafId = requestAnimationFrame(draw)
       }
 
-      rafId = requestAnimationFrame(draw)
+      const tick = (now: number) => {
+        if (cancelled || !running) return
+        renderFrame(now)
+        rafId = requestAnimationFrame(tick)
+      }
+
+      // Pause the loop when the tab is hidden; resume on return.
+      const onVisibility = () => {
+        if (document.hidden) {
+          running = false
+          if (rafId) cancelAnimationFrame(rafId)
+        } else if (!running && !cancelled) {
+          running = true
+          rafId = requestAnimationFrame(tick)
+        }
+      }
+
+      if (prefersReduced) {
+        // Reduced-motion: render one static frame, no animation loop.
+        renderFrame(performance.now())
+      } else {
+        document.addEventListener('visibilitychange', onVisibility)
+        removeVis = () => document.removeEventListener('visibilitychange', onVisibility)
+        rafId = requestAnimationFrame(tick)
+      }
     }
 
     return () => {
       cancelled = true
       if (rafId) cancelAnimationFrame(rafId)
+      if (removeVis) removeVis()
     }
   }, [size])
 
-  return <canvas ref={canvasRef} style={{ display: 'block' }} />
+  return <canvas ref={canvasRef} aria-hidden="true" style={{ display: 'block' }} />
 }

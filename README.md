@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# roddini.com
 
-## Getting Started
+Andrew Roddini's personal portfolio — a space-themed single-page site with a custom
+admin CMS and an AI chat widget ("Goose"). Built with Next.js 16, React 19, Tailwind
+v4, Framer Motion, and Neon (serverless Postgres).
 
-First, run the development server:
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev        # dev server at localhost:3000
+npm run build      # production build
+npm run lint       # ESLint
+npx tsc --noEmit   # type-check
+npx tsx scripts/migrate.ts   # run idempotent DB migrations (needs .env.local)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How it works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Homepage** (`src/app/page.tsx`) is a server component that reads all content from
+  Neon and composes the sections (hero, career highlights, experience timeline,
+  projects, carousels, contact, chat). Section visibility, headers, and nav labels are
+  DB-driven via `site_sections`.
+- **Content carousels** all render through one shared template,
+  [`src/components/Carousel.tsx`](src/components/Carousel.tsx) — each named carousel
+  (Projects, Hobbies, Recommendations, …) just supplies a `renderCard` and config.
+- **Admin CMS** lives under `/admin`, password-protected by `src/proxy.ts`. It manages
+  the dynamic content, nav links, hero copy, and section toggles.
+- **Résumé content** (experience, education, contact) is static in
+  [`src/data/resume.ts`](src/data/resume.ts); everything else is in the database.
+- **Goose chat** streams from Claude Haiku via `/api/chat`; its knowledge lives in
+  [`content/chatbot-context.md`](content/chatbot-context.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See [CLAUDE.md](CLAUDE.md) for the full architecture reference.
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+Local dev and production use separate Neon branches of the same project. Required env
+vars (see CLAUDE.md for details): `DATABASE_URL`, `ADMIN_PASSWORD`, `ADMIN_SECRET`,
+`ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `CRON_SECRET`, optional `CHAT_TOKEN_LIMIT`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploys to Vercel on push to `main`. A Vercel Cron job (`vercel.json`) emails a daily
+digest of Goose conversations. Editing `content/chatbot-context.md` or env vars requires
+a redeploy to take effect in production.

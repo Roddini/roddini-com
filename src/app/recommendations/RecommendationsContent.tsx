@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import StarField from '@/components/StarField'
+import SectionHeader from '@/components/SectionHeader'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { Recommendation } from '@/lib/types'
@@ -45,16 +46,8 @@ export default function RecommendationsContent({ recommendations }: { recommenda
           ← Back
         </Link>
 
-        <div className="flex items-center gap-4 mb-8">
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-          <span
-            className="text-[10px] tracking-[0.35em] uppercase font-light"
-            style={{ color: 'rgba(0,212,170,0.6)' }}
-          >
-            Things I Recommend
-          </span>
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-        </div>
+        <h1 className="sr-only">Recommendations</h1>
+        <SectionHeader className="mb-8">Things I Recommend</SectionHeader>
 
         <p className="text-center text-sm font-light mb-12 max-w-xl mx-auto" style={{ color: 'rgba(148,163,184,0.65)' }}>
           I genuinely enjoy sharing things I love with people — good products, great deals, things worth watching.

@@ -1,6 +1,7 @@
 'use client'
 
 import StarField from '@/components/StarField'
+import SectionHeader from '@/components/SectionHeader'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { Podcast } from '@/lib/types'
@@ -40,16 +41,8 @@ export default function EntertainmentContent({ podcasts }: { podcasts: Podcast[]
           ← Back
         </Link>
 
-        <div className="flex items-center gap-4 mb-16">
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-          <span
-            className="text-[10px] tracking-[0.35em] uppercase font-light"
-            style={{ color: 'rgba(0,212,170,0.6)' }}
-          >
-            What I&apos;m Into
-          </span>
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-        </div>
+        <h1 className="sr-only">Entertainment</h1>
+        <SectionHeader>What I&apos;m Into</SectionHeader>
 
         <div className="mb-6">
           <h2 className="text-xl font-light text-white mb-10">Podcasts</h2>
