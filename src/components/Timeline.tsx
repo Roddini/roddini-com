@@ -1,23 +1,14 @@
 'use client'
 
-import { RESUME } from '@/data/resume'
+import type { Experience } from '@/lib/types'
 import TimelineEntry from './TimelineEntry'
+import SectionHeader from './SectionHeader'
 
-export default function Timeline({ sectionHeader = 'Experience' }: { sectionHeader?: string }) {
+export default function Timeline({ items, sectionHeader = 'Experience' }: { items: Experience[]; sectionHeader?: string }) {
   return (
     <section id="experience" className="relative py-24" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
-        {/* Section label */}
-        <div className="flex items-center gap-4 mb-20">
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-          <span
-            className="text-[10px] tracking-[0.35em] uppercase font-light"
-            style={{ color: 'rgba(0,212,170,0.6)' }}
-          >
-            {sectionHeader}
-          </span>
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-        </div>
+        <SectionHeader className="mb-20">{sectionHeader}</SectionHeader>
 
         {/* Timeline wrapper with center line */}
         <div className="relative">
@@ -31,7 +22,7 @@ export default function Timeline({ sectionHeader = 'Experience' }: { sectionHead
           />
 
           {/* Entries */}
-          {RESUME.experience.map((entry, i) => (
+          {items.map((entry, i) => (
             <TimelineEntry key={entry.id} entry={entry} index={i} />
           ))}
         </div>

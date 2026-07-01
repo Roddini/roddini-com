@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
-import { Experience } from '@/data/resume'
+import type { Experience } from '@/lib/types'
+import { hexToRgb } from '@/lib/color'
 
 interface Props {
   entry: Experience
@@ -215,12 +216,4 @@ export default function TimelineEntry({ entry, index }: Props) {
       </div>
     </motion.div>
   )
-}
-
-function hexToRgb(hex: string): string {
-  const clean = hex.replace('#', '')
-  const r = parseInt(clean.substring(0, 2), 16)
-  const g = parseInt(clean.substring(2, 4), 16)
-  const b = parseInt(clean.substring(4, 6), 16)
-  return `${r},${g},${b}`
 }

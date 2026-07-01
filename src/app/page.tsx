@@ -17,10 +17,10 @@ export const dynamic = 'force-dynamic'
 
 import LifeHacksCarousel from '@/components/LifeHacksCarousel'
 import { sql } from '@/lib/db'
-import type { Hobby, Recommendation, Podcast, CareerHighlight, Project, FunProject, LookupValue, SiteSection, LifeHack } from '@/lib/types'
+import type { Hobby, Recommendation, Podcast, CareerHighlight, Project, FunProject, LookupValue, SiteSection, LifeHack, Experience } from '@/lib/types'
 
 export default async function Home() {
-  const [hobbies, recommendations, podcasts, careerHighlights, projects, funProjects, siteSections, recCategories, podFrequencies, siteConfigRows, lifeHacks] = await Promise.all([
+  const [hobbies, recommendations, podcasts, careerHighlights, projects, funProjects, siteSections, recCategories, podFrequencies, siteConfigRows, lifeHacks, experience] = await Promise.all([
     sql`SELECT * FROM hobbies WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Hobby[],
     sql`SELECT * FROM recommendations WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Recommendation[],
     sql`SELECT * FROM podcasts WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as Podcast[],
@@ -32,6 +32,7 @@ export default async function Home() {
     sql`SELECT value, label, color FROM lookup_values WHERE type = 'podcast_frequency' ORDER BY sort_order ASC` as unknown as LookupValue[],
     sql`SELECT key, value FROM site_config` as unknown as { key: string; value: string }[],
     sql`SELECT * FROM life_hacks WHERE published = true AND featured_in_carousel = true ORDER BY sort_order ASC` as unknown as LifeHack[],
+    sql`SELECT * FROM experience WHERE published = true ORDER BY sort_order ASC` as unknown as Experience[],
   ])
 
   const categoryColors = Object.fromEntries(recCategories.map((c) => [c.value, c.color]))
@@ -51,7 +52,7 @@ export default async function Home() {
 
   const hiddenSectionIds = [
     (sections.careerHighlights === false || careerHighlights.length === 0) && 'career-highlights',
-    sections.experience === false && 'experience',
+    (sections.experience === false || experience.length === 0) && 'experience',
     sections.education === false && 'education',
     projects.length === 0 && 'projects',
     funProjects.length === 0 && 'fun-projects',
@@ -67,8 +68,23 @@ export default async function Home() {
     siteConfig.hero_tagline_2 ?? 'Scaling them through hypergrowth.',
   ]
 
+  const personLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: siteConfig.hero_name ?? 'Andrew Roddini',
+    jobTitle: siteConfig.hero_title ?? 'Head of Talent',
+    description:
+      'People & Talent leader who builds recruiting and HR functions from zero and scales them through hypergrowth.',
+    url: 'https://roddini.com',
+    sameAs: ['https://www.linkedin.com/in/roddini'],
+  }
+
   return (
     <main className="relative min-h-screen" style={{ background: '#060a13' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }}
+      />
       <StarField />
       <SideNav hiddenSectionIds={hiddenSectionIds} navLabels={navLabels} />
       <ChatWidget />
@@ -84,8 +100,8 @@ export default async function Home() {
             <CareerHighlights items={careerHighlights} sectionHeader={sectionHeaders.careerHighlights} />
           </SectionReveal>
         )}
-        {sections.experience !== false && (
-          <Timeline sectionHeader={sectionHeaders.experience} />
+        {sections.experience !== false && experience.length > 0 && (
+          <Timeline items={experience} sectionHeader={sectionHeaders.experience} />
         )}
         {sections.projects !== false && projects.length > 0 && (
           <SectionReveal>

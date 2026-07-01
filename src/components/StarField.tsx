@@ -98,16 +98,16 @@ export default function StarField() {
     }
     setup()
 
-    const onScroll = () => { scrollYRef.current = Math.max(0, window.scrollY) }
-    const onResize = () => setup()
+    const prefersReduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onResize)
+    const onScroll = () => { scrollYRef.current = Math.max(0, window.scrollY) }
+    const onResize = () => { setup(); if (prefersReduced) renderFrame() }
 
     let time = 0
 
-    const draw = () => {
-      frameRef.current = requestAnimationFrame(draw)
+    const renderFrame = () => {
       const w = canvas.width
       const h = canvas.height
       ctx.clearRect(0, 0, w, h)
@@ -186,18 +186,48 @@ export default function StarField() {
       ctx.shadowBlur = 0
     }
 
-    draw()
+    window.addEventListener('resize', onResize)
+
+    let running = true
+    const tick = () => {
+      if (!running) return
+      renderFrame()
+      frameRef.current = requestAnimationFrame(tick)
+    }
+
+    // Stop the rAF loop when the tab is hidden; resume on return.
+    const onVisibility = () => {
+      if (document.hidden) {
+        running = false
+        cancelAnimationFrame(frameRef.current)
+      } else if (!running) {
+        running = true
+        tick()
+      }
+    }
+
+    if (prefersReduced) {
+      // Respect reduced-motion: paint a single static field — no loop, no parallax.
+      renderFrame()
+    } else {
+      window.addEventListener('scroll', onScroll, { passive: true })
+      document.addEventListener('visibilitychange', onVisibility)
+      tick()
+    }
 
     return () => {
+      running = false
       cancelAnimationFrame(frameRef.current)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none', transform: 'translateZ(0)', willChange: 'transform' }}
     />
   )

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { RESUME } from '@/data/resume'
+import SectionHeader from './SectionHeader'
 
 export default function Contact({ sectionHeader = 'Get in Touch' }: { sectionHeader?: string }) {
   const contact = RESUME.contact
@@ -9,16 +10,7 @@ export default function Contact({ sectionHeader = 'Get in Touch' }: { sectionHea
   return (
     <section id="contact" className="relative py-16 pb-24" style={{ zIndex: 1 }}>
       <div className="max-w-5xl mx-auto px-6">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-          <span
-            className="text-[10px] tracking-[0.35em] uppercase font-light"
-            style={{ color: 'rgba(0,212,170,0.6)' }}
-          >
-            {sectionHeader}
-          </span>
-          <div className="h-px flex-1" style={{ background: 'rgba(0,212,170,0.15)' }} />
-        </div>
+        <SectionHeader className="mb-10">{sectionHeader}</SectionHeader>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -54,7 +46,7 @@ export default function Contact({ sectionHeader = 'Get in Touch' }: { sectionHea
           <span style={{ color: 'rgba(0,212,170,0.25)' }}>·</span>
 
           <a
-            href="/andrew-roddini-resume.pdf"
+            href="/api/resume/download"
             download
             className="inline-flex items-center px-4 py-1.5 rounded-full text-[11px] tracking-[0.2em] uppercase font-light transition-all duration-200"
             style={{

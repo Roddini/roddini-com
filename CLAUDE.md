@@ -22,24 +22,27 @@ This is a portfolio site (roddini.com) with a custom admin CMS backed by Neon (s
 
 There are **two** content sources — don't confuse them:
 
-- **`src/data/resume.ts`** — static source of truth for resume content (experience, projects, education). Edit this file directly to change that content.
-- **Neon database** — source of truth for dynamic content: podcasts, recommendations, hobbies, career highlights, and section visibility toggles. Managed via `/admin`. Connection via `DATABASE_URL` env var in `.env.local`.
+- **`src/data/resume.ts`** — static source of truth for **education and contact** only. It is also the one-time **seed source** for the DB `experience` table (imported by `scripts/migrate.ts`), so don't delete it. Edit education/contact here; edit experience via **`/admin/resume`** (see Résumé import below).
+- **Neon database** — source of truth for dynamic content: experience, podcasts, recommendations, hobbies, career highlights, projects, fun projects, life hacks, and section visibility toggles. Managed via `/admin`. Connection via `DATABASE_URL` env var in `.env.local`.
 
-`src/lib/types.ts` defines the TypeScript types for all DB-backed content (`Podcast`, `Recommendation`, `Hobby`, `CareerHighlight`, `SiteSection`, `NavLink`, `SiteConfig`, `ChatConversation`, `ChatMessage`, `ChatConversationSummary`). The files in `src/data/entertainment.ts`, `src/data/hobbies.ts`, and `src/data/recommendations.ts` are legacy stubs — the live pages do not use them.
+`src/lib/types.ts` defines the TypeScript types for all DB-backed content (`Experience`, `Podcast`, `Recommendation`, `Hobby`, `CareerHighlight`, `Project`, `FunProject`, `LifeHack`, `LookupValue`, `SiteSection`, `NavLink`, `SiteConfig`, `ChatConversation`, `ChatMessage`, `ChatConversationSummary`). (The legacy `src/data/{entertainment,hobbies,recommendations}.ts` stubs have been removed.)
 
 ### Database
 
 `src/lib/db.ts` exports a `sql` tagged-template function via `@neondatabase/serverless`. Pages query it directly in server components — no ORM, no abstraction layer. Cast results with `as unknown as Type[]` since Neon returns `Record<string, any>[]`.
 
-Tables: `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `site_sections`, `chat_sessions`, `chat_access_requests`, `chat_conversations`, `chat_messages`, `nav_links`, `site_config`.
+Tables: `experience`, `experience_versions`, `podcasts`, `recommendations`, `hobbies`, `career_highlights`, `projects`, `fun_projects`, `life_hacks`, `lookup_values`, `site_sections`, `chat_sessions`, `chat_access_requests`, `chat_conversations`, `chat_messages`, `nav_links`, `site_config`, `assets`.
 
 - Each content table has `published` (show anywhere) and `featured_in_carousel` (show on homepage carousel).
+- `experience` — one row per role: `role`, `company`, `period`, `year`, `description`, `highlights TEXT[]`, `tags TEXT[]`, `accent`, `sort_order`, `published`. Seeded once from `RESUME.experience` (guarded by an emptiness check); drives the homepage Timeline. Edited via `/admin/resume`.
+- `experience_versions` — `id`, `snapshot JSONB`, `created_at`. A snapshot of the whole `experience` set is saved here before every Publish/restore (see `src/lib/experience.ts` → `snapshotCurrentExperience` / `replaceExperience`), pruned to the newest 10. Powers the "Restore" buttons on `/admin/resume`.
+- `assets` — blob store: `key` (PK), `data_base64`, `content_type`, `filename`. Holds the downloadable résumé PDF under key `resume_pdf`, served by `/api/resume/download`. Stored base64-in-DB so admin uploads take effect without a redeploy (Vercel's runtime filesystem is read-only).
 - `chat_conversations` — one row per chat widget session: `id` (client-generated UUID), `visitor_id` (persistent localStorage id), `ip`, `country`/`city` (from Vercel geo headers, null locally), `message_count`, `tokens_used`, `started_at`, `updated_at`.
 - `chat_messages` — `conversation_id` (FK → `chat_conversations`, `ON DELETE CASCADE`), `role` (`user`/`assistant`), `content`, `created_at`. Index on `conversation_id`.
 
 **`scripts/migrate.ts` is idempotent — safe to re-run anytime.** Schema statements use `CREATE/ALTER ... IF NOT EXISTS`, seed inserts use `ON CONFLICT DO NOTHING`, and the `site_sections` label seed `UPDATE`s are guarded by `WHERE ... section_header IS NULL` so they never overwrite admin-customized headers/labels.
 - `site_sections` has one row per section with: `section_key` (string), `visible` (boolean), `section_header` (text — overrides the hardcoded heading in the component), `nav_label` (text — overrides the SideNav dot label). Keys: `hero`, `careerHighlights`, `experience`, `education`, `projects`, `funProjects`, `hobbies`, `recommendations`, `entertainment`, `contact`.
-- `nav_links` — rows with `id`, `href`, `label`, `sort_order`. Controls the hamburger menu. Managed at `/admin/nav-links`.
+- `nav_links` — rows with `id`, `href`, `label`, `sort_order`. Controls the hamburger menu. Managed at `/admin/nav-links`. `href` has a **UNIQUE index** (`nav_links_href_key`) so the default-link seed (`ON CONFLICT (href) DO NOTHING`) is idempotent — an earlier version lacked it and re-seeded the four defaults on every migrate, so the migration also de-dupes existing rows (keep lowest `id` per `href`).
 - `site_config` — key/value table. Current keys: `hero_name`, `hero_title`, `hero_tagline_1`, `hero_tagline_2`. Managed at `/admin/hero`.
 
 ### Admin CMS
@@ -50,6 +53,7 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 
 **Admin pages:**
 - `/admin` (dashboard) — toggle visibility + edit `section_header` / `nav_label` for all homepage sections, including `experience` and `education`. All sections are fully toggleable. Fields auto-save 600ms after typing stops.
+- `/admin/resume` — upload a résumé PDF (or paste text) → Claude parses it into structured experience entries → review/edit each (role, company, period, year, description, highlights, tags, accent, order) → **Publish** (replace-all into `experience`). Nothing changes until Publish — which also stores the uploaded PDF as the downloadable résumé. Includes a version-history "Restore". See Résumé import below.
 - `/admin/hero` — edit `hero_name`, `hero_title`, `hero_tagline_1`, `hero_tagline_2` via `site_config`. Auto-saves 600ms after typing.
 - `/admin/nav-links` — full CRUD for hamburger menu links (`nav_links` table). "Add Link" pre-populates `sort_order` as `max(existing) + 1`.
 - `/admin/conversations` — read-only viewer for logged Goose chat conversations. Master/detail: filterable list (keyword + date range) on the left, full transcript on the right. Per-conversation delete (cascades to messages), and an "access request" badge when the visitor's IP also submitted the token-limit form.
@@ -59,6 +63,13 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 - `PATCH /api/admin/site-sections` — accepts `{ section_key, visible?, section_header?, nav_label? }` with COALESCE (only updates fields provided)
 - `GET /api/admin/site-config` — returns `{ key: value }` object for all rows
 - `PATCH /api/admin/site-config` — accepts `{ key, value }` to update a single config entry
+- `GET /api/admin/experience` — returns all experience rows ordered by `sort_order`
+- `POST /api/admin/experience` — inserts one experience row
+- `PUT /api/admin/experience` — **replace-all**: `{ items: [...] }` deletes existing rows and re-inserts in list order (used by `/admin/resume` Publish)
+- `PATCH /api/admin/experience/[id]` — partial update (COALESCE); `DELETE /api/admin/experience/[id]`
+- `POST /api/admin/resume/parse` — `{ pdfBase64? , text? }` → sends the PDF (base64 `document` block) or text to `claude-opus-4-8`, returns `{ items: [...] }` structured experience for review (does **not** save)
+- `GET /api/admin/resume/upload` — reports `{ hasResume, filename, updated_at }`; `POST` stores `{ pdfBase64, filename }` as the downloadable résumé (`assets` key `resume_pdf`)
+- `GET /api/resume/download` — **public** (not under `/api/admin`, so not gated): streams the résumé PDF from `assets`, falling back to the bundled `public/andrew-roddini-resume.pdf`. `force-dynamic`.
 - `GET /api/admin/nav-links` — returns rows ordered by `sort_order`
 - `POST /api/admin/nav-links` — inserts a new link
 - `PATCH /api/admin/nav-links/[id]` — partial update (COALESCE)
@@ -75,7 +86,7 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 
 **StarField** (`src/components/StarField.tsx`): Canvas-based particle system with three depth layers. Uses `window.scrollY` via a ref (not state) to drive parallax without re-renders. Layer-1 particles draw constellation lines between neighbors within 115px. Layer parallax factors are 0.06 / 0.18 / 0.35. `scrollY` is clamped to `Math.max(0, ...)` to prevent iOS Safari rubber-band jitter. Canvas uses `translateZ(0)` + `will-change: transform` to stay on its own GPU compositing layer.
 
-**Timeline** (`src/components/Timeline.tsx` + `TimelineEntry.tsx`): Renders `RESUME.experience` as an alternating left/right layout using CSS grid (`grid-cols-[1fr_40px_1fr]`). Entrance animations use Framer Motion `whileInView` with `once: true`. Each entry has its own `accent` hex color defined in `resume.ts`; a local `hexToRgb` helper converts it for use in rgba strings.
+**Timeline** (`src/components/Timeline.tsx` + `TimelineEntry.tsx`): Renders the DB `experience` rows (passed as an `items: Experience[]` prop from `page.tsx`) as an alternating left/right layout using CSS grid (`grid-cols-[1fr_40px_1fr]`). Entrance animations use Framer Motion `whileInView` with `once: true`. Each entry has its own `accent` hex color; the shared `hexToRgb` helper (`src/lib/color.ts`) converts it for use in rgba strings.
 
 **SideNav** (`src/components/SideNav.tsx`): Fades in 1.2s after scrolling stops via `useScrollVisibility` hook. Uses a scroll-event listener with `getBoundingClientRect()` to track the active section — picks whichever section has the most overlap with the 10–70% viewport zone. Hidden on mobile (`hidden md:flex`). Dots for sections with no DB data are hidden via `hiddenSectionIds` prop. Accepts `navLabels?: Record<string, string>` prop — values override the hardcoded dot labels for each section id.
 
@@ -87,7 +98,18 @@ Admin UI pages live in `src/app/admin/`. API routes follow the pattern `src/app/
 
 **Hero** (`src/components/Hero.tsx`): Accepts `name`, `heroTitle`, and `taglines: [string, string]` props sourced from `site_config` at the homepage level. Has a CSS 3D tilt effect on the name: mouse hover (or finger drag on mobile) tilts the element using `rotateX`/`rotateY`, with stacked `text-shadow` layers for depth that fade in from zero at rest via a `tiltAmount` scalar. Spring-back on mouse leave / touch end uses a `requestAnimationFrame` lerp (factor 0.83/frame). "Roddini" uses a two-span technique (shadow copy + gradient face) to work around the CSS paint-order issue where `text-shadow` renders on top of `background-clip: text` gradient. Touch drag uses native DOM listeners with `{ passive: false }` on `touchmove` so `e.preventDefault()` blocks page scroll on iOS Safari.
 
-**Carousels** (`CareerHighlights`, `HobbiesCarousel`, `RecommendationsCarousel`, `EntertainmentPreview`): All four use `left: 50% / marginLeft: -CARD_W/2 / top: 50% / marginTop: -CARD_H/2` for absolute card positioning — do NOT use `flex items-center justify-center` on the card container, as Safari mobile does not apply flex alignment to absolutely positioned children correctly.
+**Carousels — one shared template.** All seven content carousels (`CareerHighlights`, `Projects`, `FunProjects`, `HobbiesCarousel`, `RecommendationsCarousel`, `EntertainmentPreview`, `LifeHacksCarousel`) are thin wrappers that render through **`src/components/Carousel.tsx`** — a generic component that owns the motion/drag/auto-advance/dot-nav/arrows/edge-fades/drift. Each wrapper just supplies a `renderCard(item, ctx)` and config (`cardWidth`/`cardHeight`/`trackHeight`, optional `footerLink`, optional per-item `cardBorder`). To add or change a carousel, edit its wrapper's `renderCard`; to change shared behavior, edit `Carousel.tsx`. The template also exports `CardDescription` (the expand-on-hover + "···" body used by every card). All hooks run before the `items.length === 0 → null` guard, so an unfilled carousel renders nothing without breaking the rules of hooks. Card positioning uses `left: 50% / marginLeft: -cardWidth/2 / top: 50% / marginTop: -cardHeight/2` for **all** carousels — do NOT use `flex items-center justify-center`, as Safari mobile mis-aligns absolutely-positioned flex children.
+
+`src/components/SectionHeader.tsx` is the shared `── LABEL ──` divider (used by the carousel template, Timeline, Education, Contact, and the dedicated pages). Reduced-motion is respected app-wide via `<MotionProvider>` (`MotionConfig reducedMotion="user"` in `layout.tsx`) plus per-component checks in the canvas components and `Carousel`.
+
+### Résumé import
+
+The Experience section is DB-driven and editable end-to-end from **`/admin/resume`** (`src/app/admin/resume/page.tsx`):
+
+- **Upload a PDF** (Google Docs → File → Download → PDF): the file is sent to `POST /api/admin/resume/parse`, which passes it to `claude-opus-4-8` as a base64 `document` block and returns structured experience entries. Parsing uses a prompt-based JSON extraction (tolerant parser strips code fences) — model-version-agnostic, and every result goes through a human review step. **Nothing is stored on upload** — the PDF is held client-side and only written as the download (`POST /api/admin/resume/upload`) when you Publish, so neither the timeline nor the download changes until you confirm.
+- **Review & publish**: the parsed entries populate an editable list (role/company/period/year/description/highlights/tags/accent/order, all editable; highlights edited as one-per-line text, tags comma-separated). **Publish** calls `PUT /api/admin/experience` (replace-all) → the homepage Timeline updates with no redeploy. You can also paste text or hand-edit instead of uploading.
+- **Version history / undo**: every Publish (and every restore) first snapshots the current set into `experience_versions`. The page lists the last 10 versions with a **Restore** button — `POST /api/admin/experience/versions { restoreId }` snapshots the current state (so the restore itself is undoable) then replaces experience with that version. The parser also folds early-career/junior roles into a single "Earlier Roles" entry.
+- **Downloadable résumé**: the Contact button and Goose both link to `/api/resume/download`, which serves the uploaded PDF from `assets` (or the bundled file as fallback). `linkify()` in `ChatWidget.tsx` renders any `.pdf` / `/api/resume/download` link as a "Download résumé ↓" pill; `content/chatbot-context.md` tells Goose to offer it.
 
 ### Chatbot — Goose
 
